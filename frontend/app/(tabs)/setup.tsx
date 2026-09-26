@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { Platform, Pressable, Text, View } from 'react-native';
 import { api } from '../../src/api';
 import { shortId } from '../../src/buildId';
+import { Button } from '../../src/components/Button';
 import { Card, Screen } from '../../src/components/Screen';
 import { API_URL } from '../../src/config';
 import { useBoot } from '../../src/splashgate';
@@ -20,6 +22,7 @@ const STATUS = {
 export default function SetupScreen() {
   const { buildId } = useBoot();
   const [status, setStatus] = useState<Status>('idle');
+  const router = useRouter();
 
   async function checkServer() {
     setStatus('checking');
@@ -55,6 +58,11 @@ export default function SetupScreen() {
           <Text className="font-semibold text-text">Test connection</Text>
         </Pressable>
         <Text className="mt-sm text-xs text-dim">Set EXPO_PUBLIC_API_URL in .env to your laptop's LAN IP.</Text>
+      </Card>
+
+      <Card label="Local AI (test)">
+        <Text className="text-dim">Download a small model to this phone and prompt it offline.</Text>
+        <Button className="mt-md" icon="sparkles-outline" label="Open local AI" onPress={() => router.push('/ask')} />
       </Card>
     </Screen>
   );

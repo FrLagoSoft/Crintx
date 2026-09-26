@@ -5,6 +5,22 @@
 > (a route, a tab entry, a `<Component />`). Don't restructure the existing BLE, map,
 > buzz or API code. It already works on the phone.
 
+## Current status (proof of concept)
+
+Setup tab → **Open local AI** → `app/ask.tsx` → `src/ai/AskScreen.tsx`:
+download the model (491 MB, one time) → **Load model** → type a prompt → streamed answer with
+timing and tokens/s. It's a plain prompt box with no location data yet.
+
+- `model.ts`: download to `.part`, size check, rename; delete.
+- `llm.ts`: `loadModel()` (once), `ask(prompt, onToken)`, `stop()`, `unloadModel()`. CPU only.
+- `llama.rn@0.13.0-rc.6` + `expo-file-system` added; `"llama.rn"` plugin added to `app.json`.
+- Verified on a laptop: typecheck passes, Expo config applies the plugin, Android JS bundle builds.
+- **Not yet verified:** an EAS native build, or anything running on a real phone.
+
+Windows gotcha: run `npm install` from **PowerShell/cmd, not Git Bash**. llama.rn's install
+step extracts native libraries with `tar`, and Git Bash's `tar` fails on `C:\` paths
+("Cannot connect to C: resolve failed"). EAS (Linux) builds are unaffected.
+
 ## Goal (keep it small)
 
 A screen (or card) in the app where you can **type a question and a small language model

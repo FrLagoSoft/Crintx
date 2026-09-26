@@ -63,7 +63,8 @@
         {
           "locationWhenInUsePermission": "Crintx records where each buzz happened so you can find your devices."
         }
-      ]
+      ],
+      "llama.rn"
     ],
     "extra": {
       "router": {},
