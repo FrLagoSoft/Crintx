@@ -1,0 +1,31 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
+
+/**
+ * Crintx design tokens. Tailwind v4 is CSS-first (no tailwind.config.js):
+ * `--color-signal` gives you `bg-signal`, `text-signal`, `border-signal`, etc.
+ *
+ * src/theme.ts mirrors the colors for the few places that can't take a
+ * className (tab bar, status bar, icons). Change both together.
+ */
+@theme {
+  --color-void: #0e1116;    /* app background */
+  --color-panel: #161b22;   /* cards */
+  --color-edge: #262d36;    /* borders, dividers */
+  --color-text: #e8ecf1;    /* primary text */
+  --color-dim: #8b96a3;     /* secondary text */
+  --color-signal: #ff6a3d;  /* brand accent, primary actions */
+  --color-live: #3ddc97;    /* connected / success */
+  --color-fault: #ff4d5e;   /* errors */
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+
+  --radius-card: 16px;
+  --radius-pill: 999px;
+}
