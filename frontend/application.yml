@@ -1,0 +1,7 @@
+spring:
+  ai:
+    elevenlabs:
+      api-key: sk_58e0fec4a331e10139d3becf754895f6e8bd9af0467792ec
+      base-url: https://api.elevenlabs.io
+    voice:
+      model: eleven_multilingual_v2
