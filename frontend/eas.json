@@ -8,12 +8,20 @@
       "developmentClient": true,
       "distribution": "internal",
       "environment": "development",
-      "android": { "buildType": "apk" }
+      "android": { "buildType": "apk" },
+      "env": {
+        "ORG_GRADLE_PROJECT_reactNativeArchitectures": "arm64-v8a",
+        "ORG_GRADLE_PROJECT_rnllamaVariants": "rnllama,rnllama_v8_2_dotprod"
+      }
     },
     "preview": {
       "distribution": "internal",
       "environment": "preview",
-      "android": { "buildType": "apk" }
+      "android": { "buildType": "apk" },
+      "env": {
+        "ORG_GRADLE_PROJECT_reactNativeArchitectures": "arm64-v8a",
+        "ORG_GRADLE_PROJECT_rnllamaVariants": "rnllama,rnllama_v8_2_dotprod"
+      }
     },
     "production": {
       "autoIncrement": true,
