@@ -154,6 +154,23 @@ export function readName(id: string): Promise<string> {
   });
 }
 
+/** 0 = off, 100 = full. Saved on the tag itself, so every phone sees the same levels. */
+export type Levels = { buzzer: number; motor: number };
+
+export function readLevels(id: string): Promise<Levels> {
+  return withTag(id, async (m) => {
+    const c = await m.readCharacteristicForDevice(id, BLE.SERVICE_UUID, BLE.LEVELS_CHAR_UUID);
+    const [buzzer = 100, motor = 100] = fromBase64(c.value ?? '');
+    return { buzzer, motor };
+  });
+}
+
+/** Saves both levels on the tag; it plays a short preview buzz at the new levels. */
+export function setLevels(id: string, { buzzer, motor }: Levels) {
+  const pct = (n: number) => Math.min(100, Math.max(0, Math.round(n)));
+  return withTag(id, (m) => write(m, id, BLE.LEVELS_CHAR_UUID, [pct(buzzer), pct(motor)]));
+}
+
 // ---- base64 (the BLE library's wire format) ---------------------------------
 
 const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';

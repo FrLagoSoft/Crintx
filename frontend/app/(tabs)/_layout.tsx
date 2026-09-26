@@ -21,7 +21,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Tags', tabBarIcon: icon('radio-outline') }} />
-      <Tabs.Screen name="history" options={{ title: 'History', tabBarIcon: icon('time-outline') }} />
+      <Tabs.Screen name="history" options={{ title: 'History', tabBarIcon: icon('map-outline') }} />
       <Tabs.Screen name="setup" options={{ title: 'Setup', tabBarIcon: icon('options-outline') }} />
     </Tabs>
   );

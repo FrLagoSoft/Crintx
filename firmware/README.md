@@ -52,6 +52,7 @@ Service `a6c32c26-0bda-4c27-8458-3a8b5a9da013`
 |---|---|---|---|
 | COMMAND | `b62195c8-9a1d-4d43-b3a4-aa061b751041` | write | `01` buzz default length · `01 tt` buzz tt×100 ms · `02 onLo onHi offLo offHi tt` buzzer wave, on/off in µs (little-endian), tt×100 ms |
 | NAME | `a00cf118-5df4-42f7-af86-3e272d881631` | read / write | UTF-8 name, 1–20 printable ASCII |
+| LEVELS | `ca83ff33-6353-4c51-971d-96d17289199f` | read / write | `bb mm`: buzzer volume, vibration, each 0–100 (0 = off). A write saves to flash and plays a 300 ms preview. |
 
 Buzzes are capped at 2 s each (`MAX_BURST_MS`). A command that arrives while
 the tag is already buzzing is ignored.
@@ -59,6 +60,32 @@ the tag is already buzzing is ignored.
 "Bluetooth frequency": BLE always uses the 2.4 GHz band and hops channels on its
 own, so there's nothing to set. The two knobs that matter, advertising interval
 (how fast phones find the tag vs. battery) and TX power (range), are in `config.h`.
+
+## Volume and vibration levels
+
+The buzzer and motor are driven with 20 kHz PWM: full voltage, switched on and
+off faster than you can hear. The fraction of time on sets the loudness and the
+vibration strength. Set them from the app's **Levels** panel, or over Serial:
+
+```
+levels          show both
+volume 40       buzzer to 40, saves, plays a preview
+motor 70        vibration to 70, saves, plays a preview
+volume 0        silent tag (vibrate only)
+```
+
+Every buzzer and motor has a point below which it stops working cleanly: the
+buzzer sputters, the motor stalls. Level 1 is mapped to `BUZZER_MIN_DUTY` /
+`MOTOR_MIN_DUTY` in `config.h` so the whole slider is usable. To tune them for
+your parts, use `raw`, which sets the exact on-percentage and ignores the levels:
+
+```
+raw 10 0        buzzer 10% on, motor off
+raw 5 0         lower...
+raw 0 30        motor 30% on, buzzer off
+```
+
+Put the lowest values that still sound or spin cleanly into `config.h` and re-flash.
 
 ## The buzzer test: does it sound lower with delayed inputs?
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
+import { api } from '../../src/api';
 import { shortId } from '../../src/buildId';
 import { Card, Screen } from '../../src/components/Screen';
 import { API_URL } from '../../src/config';
@@ -22,15 +23,11 @@ export default function SetupScreen() {
 
   async function checkServer() {
     setStatus('checking');
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
     try {
-      const res = await fetch(`${API_URL}/health`, { signal: controller.signal });
-      setStatus(res.ok ? 'up' : 'down');
+      const res = await api.health();
+      setStatus(res?.status === 'UP' ? 'up' : 'down');
     } catch {
       setStatus('down');
-    } finally {
-      clearTimeout(timer);
     }
   }
 

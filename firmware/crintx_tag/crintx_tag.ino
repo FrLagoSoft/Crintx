@@ -1,9 +1,10 @@
 /*
  * Crintx tag firmware: ESP32 BLE peripheral with a vibration motor + buzzer.
  *
- * The phone connects over Bluetooth and writes to one of two characteristics:
+ * The phone connects over Bluetooth and uses three characteristics:
  *   COMMAND  -> buzz, or play a test waveform on the buzzer
  *   NAME     -> rename the tag (saved to flash, survives power loss)
+ *   LEVELS   -> buzzer volume + vibration strength, 0-100 each (saved to flash)
  * Every setting lives in config.h. Wiring and the full protocol: firmware/README.md.
  *
  * You can also drive it from the Serial Monitor (115200 baud, newline). Type
@@ -35,9 +36,12 @@ static void queueJob(JobKind kind, uint32_t onUs, uint32_t offUs, uint32_t ms) {
   jobPending = true;
 }
 
-// ---- Name (persisted) -------------------------------------------------------
+// ---- Persisted settings -----------------------------------------------------
 static Preferences prefs;
 static String tagName;
+static uint8_t buzzerLevel = DEFAULT_BUZZER_LEVEL;  // 0-100
+static uint8_t motorLevel = DEFAULT_MOTOR_LEVEL;    // 0-100
+static BLECharacteristic *levelsChar = nullptr;
 static uint32_t restartAt = 0;  // millis() to restart at after a rename; 0 = none
 
 static String defaultName() {
@@ -70,38 +74,66 @@ static bool renameTag(String n) {
   return true;
 }
 
+/** Save both levels (clamped to 0-100) and keep the BLE value in sync. */
+static void setLevels(int buzzer, int motor) {
+  buzzerLevel = constrain(buzzer, 0, 100);
+  motorLevel = constrain(motor, 0, 100);
+  prefs.putUChar("buzzer", buzzerLevel);
+  prefs.putUChar("motor", motorLevel);
+  if (levelsChar) {
+    uint8_t v[2] = {buzzerLevel, motorLevel};
+    levelsChar->setValue(v, 2);
+  }
+}
+
 // ---- Output -----------------------------------------------------------------
+static const uint32_t FULL_DUTY = 1u << PWM_BITS;
+
+/** Level 0 = off; 1..100 = minPct%..100% duty. */
+static uint32_t levelToDuty(uint8_t level, uint8_t minPct) {
+  if (level == 0) return 0;
+  uint32_t pct = minPct + (100u - minPct) * (level - 1u) / 99u;
+  return FULL_DUTY * pct / 100u;
+}
+
+static uint32_t pctToDuty(int pct) { return FULL_DUTY * constrain(pct, 0, 100) / 100u; }
+
+static void attachPwm(uint8_t pin) {
+  if (!ledcAttach(pin, PWM_FREQ_HZ, PWM_BITS)) Serial.printf("PWM setup failed on GPIO %u\n", pin);
+  ledcWrite(pin, 0);
+}
+
+static void drive(uint32_t buzzerDuty, uint32_t motorDuty, uint32_t ms) {
+  ms = min(ms, (uint32_t)MAX_BURST_MS);
+  ledcWrite(BUZZER_PIN, buzzerDuty);
+  ledcWrite(MOTOR_PIN, motorDuty);
+  delay(ms);
+  ledcWrite(BUZZER_PIN, 0);
+  ledcWrite(MOTOR_PIN, 0);
+}
+
+/** The real alert: motor + buzzer at the saved levels. */
+static void runBuzz(uint32_t ms) {
+  drive(levelToDuty(buzzerLevel, BUZZER_MIN_DUTY), levelToDuty(motorLevel, MOTOR_MIN_DUTY), ms);
+}
+
 static void waitUs(uint32_t us) {
   if (us >= 1000) delay(us / 1000);  // delay() also lets the idle task run
   delayMicroseconds(us % 1000);
-}
-
-/** The real alert: motor + buzzer, steady on. */
-static void runBuzz(uint32_t ms) {
-  ms = min(ms, (uint32_t)MAX_BURST_MS);
-  digitalWrite(MOTOR_PIN, HIGH);
-  digitalWrite(BUZZER_PIN, HIGH);
-  delay(ms);
-  digitalWrite(MOTOR_PIN, LOW);
-  digitalWrite(BUZZER_PIN, LOW);
-}
-
-/** Buzzer steady HIGH, no switching: the baseline the wave tests compare against. */
-static void runHold(uint32_t ms) {
-  ms = min(ms, (uint32_t)MAX_BURST_MS);
-  digitalWrite(BUZZER_PIN, HIGH);
-  delay(ms);
-  digitalWrite(BUZZER_PIN, LOW);
 }
 
 /**
  * Bit-banged square wave on the buzzer only: HIGH for onUs, LOW for offUs,
  * repeated for ms. Same supply voltage the whole time; only the timing changes.
  *   Passive buzzer: pitch = 1,000,000 / (onUs + offUs) Hz -> longer delays, lower pitch.
- *   Active buzzer:  it makes its own fixed tone; delays just chop it into beeps/clicks.
+ *   Active buzzer:  fast switching (e.g. 50 us period) lowers the volume;
+ *                   slow switching chops it into beeps/clicks.
+ * The buzzer pin is borrowed from the PWM hardware for the duration.
  */
 static void runWave(uint32_t onUs, uint32_t offUs, uint32_t ms) {
   ms = min(ms, (uint32_t)MAX_BURST_MS);
+  ledcDetach(BUZZER_PIN);
+  pinMode(BUZZER_PIN, OUTPUT);
   uint32_t end = millis() + ms;
   while ((int32_t)(millis() - end) < 0) {
     digitalWrite(BUZZER_PIN, HIGH);
@@ -109,6 +141,7 @@ static void runWave(uint32_t onUs, uint32_t offUs, uint32_t ms) {
     digitalWrite(BUZZER_PIN, LOW);
     waitUs(offUs);
   }
+  attachPwm(BUZZER_PIN);
 }
 
 /** Steps the delay from short to long so you can hear the pitch drop (or not). */
@@ -131,7 +164,7 @@ class ServerCallbacks : public BLEServerCallbacks {
 
 /**
  * COMMAND characteristic:
- *   [0x01]                         buzz for BUZZ_MS
+ *   [0x01]                         buzz for BUZZ_MS at the saved levels
  *   [0x01, t]                      buzz for t * 100 ms
  *   [0x02, onLo, onHi, offLo, offHi, t]   buzzer wave: on/off in us (uint16, little-endian), t * 100 ms
  */
@@ -164,6 +197,18 @@ class NameCallbacks : public BLECharacteristicCallbacks {
   }
 };
 
+/** LEVELS characteristic: [buzzer 0-100, motor 0-100]. A write saves and plays a short preview. */
+class LevelsCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *c) override {
+    if (c->getLength() < 2) {
+      setLevels(buzzerLevel, motorLevel);  // malformed: restore the real value
+      return;
+    }
+    setLevels(c->getData()[0], c->getData()[1]);
+    queueJob(JOB_BUZZ, 0, 0, PREVIEW_MS);
+  }
+};
+
 static void startBle() {
   BLEDevice::init(tagName);
   esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_DEFAULT, TX_POWER);
@@ -182,6 +227,11 @@ static void startBle() {
   name->setValue(tagName);
   name->setCallbacks(new NameCallbacks());
 
+  levelsChar = service->createCharacteristic(
+      LEVELS_CHAR_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+  levelsChar->setCallbacks(new LevelsCallbacks());
+  setLevels(buzzerLevel, motorLevel);  // publishes the current value
+
   service->start();
 
   BLEAdvertising *adv = BLEDevice::getAdvertising();
@@ -199,11 +249,19 @@ static void printHelp() {
       "  name                 show this tag's name\n"
       "  name <new name>      rename (1-20 chars), saves and restarts\n"
       "  name reset           back to the default Crintx-XXXX name\n"
-      "  buzz [ms]            motor + buzzer\n"
-      "  hold [ms]            buzzer steady HIGH (the baseline to compare against)\n"
+      "  buzz [ms]            motor + buzzer at the saved levels\n"
+      "  levels               show buzzer volume and vibration (0-100)\n"
+      "  volume <0-100>       set + save buzzer volume, then preview\n"
+      "  motor <0-100>        set + save vibration strength, then preview\n"
+      "  raw <buzzer%> <motor%> [ms]  exact duty, ignores levels (to find the MIN_DUTY values)\n"
+      "  hold [ms]            buzzer 100% on (the baseline to compare against)\n"
       "  wave <on_us> <off_us> [ms]   buzzer square wave with those delays\n"
       "  sweep                step through delays 125us..2500us\n"
       "  help");
+}
+
+static void printLevels() {
+  Serial.printf("Buzzer volume %u, vibration %u (0-100)\n", buzzerLevel, motorLevel);
 }
 
 static void handleLine(String line) {
@@ -228,9 +286,29 @@ static void handleLine(String line) {
     }
   } else if (cmd == "buzz") {
     runBuzz(arg.length() ? arg.toInt() : BUZZ_MS);
+  } else if (cmd == "levels") {
+    printLevels();
+  } else if (cmd == "volume" || cmd == "motor") {
+    if (arg.length() == 0) {
+      printLevels();
+      return;
+    }
+    if (cmd == "volume") setLevels(arg.toInt(), motorLevel);
+    else setLevels(buzzerLevel, arg.toInt());
+    printLevels();
+    runBuzz(PREVIEW_MS);
+  } else if (cmd == "raw") {
+    int b = -1, m = -1;
+    unsigned ms = 1000;
+    if (sscanf(arg.c_str(), "%d %d %u", &b, &m, &ms) < 2 || b < 0 || m < 0) {
+      Serial.println("Usage: raw <buzzer%> <motor%> [ms]   e.g. raw 10 0");
+      return;
+    }
+    Serial.printf("Buzzer %d%% duty, motor %d%% duty\n", constrain(b, 0, 100), constrain(m, 0, 100));
+    drive(pctToDuty(b), pctToDuty(m), ms);
   } else if (cmd == "hold") {
-    Serial.println("Buzzer steady HIGH.");
-    runHold(arg.length() ? arg.toInt() : 1000);
+    Serial.println("Buzzer 100% on.");
+    drive(FULL_DUTY, 0, arg.length() ? arg.toInt() : 1000);
   } else if (cmd == "wave") {
     unsigned on = 0, off = 0, ms = 1000;
     if (sscanf(arg.c_str(), "%u %u %u", &on, &off, &ms) < 2 || on + off == 0) {
@@ -249,17 +327,18 @@ static void handleLine(String line) {
 // ---- Main -------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
-  pinMode(MOTOR_PIN, OUTPUT);
-  pinMode(BUZZER_PIN, OUTPUT);
-  digitalWrite(MOTOR_PIN, LOW);
-  digitalWrite(BUZZER_PIN, LOW);
+  attachPwm(MOTOR_PIN);
+  attachPwm(BUZZER_PIN);
 
   prefs.begin("crintx", false);
   tagName = prefs.getString("name", defaultName());
+  buzzerLevel = prefs.getUChar("buzzer", DEFAULT_BUZZER_LEVEL);
+  motorLevel = prefs.getUChar("motor", DEFAULT_MOTOR_LEVEL);
 
   startBle();
 
   Serial.printf("\n%s advertising. Type `help` for commands.\n", tagName.c_str());
+  printLevels();
 }
 
 void loop() {

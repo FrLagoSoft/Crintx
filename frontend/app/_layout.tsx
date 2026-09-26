@@ -13,6 +13,7 @@ export default function RootLayout() {
       <SplashGate>
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.void } }}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="buzz" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         </Stack>
       </SplashGate>
     </SafeAreaProvider>
