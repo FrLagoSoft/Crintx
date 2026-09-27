@@ -4,6 +4,7 @@ import { Pressable, Text } from 'react-native';
 import { setLevels, type Levels, type Tag } from '../ble';
 import { LevelSlider } from '../components/LevelSlider';
 import { Page } from '../components/Page';
+import { narrate } from '../narrator';
 import type { Prefs } from '../prefs';
 
 type Props = {
@@ -61,15 +62,22 @@ export function SettingsPage({ width, height, tags, bleBusy, setBleBusy, prefs, 
     );
   }
 
-  function toggleNarration() {
+  /** Turning it on speaks a short line right away, so you know the voice works. */
+  async function toggleNarration() {
     if (!prefs) return;
     const narration = !prefs.narration;
     onPrefs({ ...prefs, narration });
-    // TODO(tts): speak buzz results once the text-to-speech server (ai-model branch) is merged.
-    setMessage({
-      ok: true,
-      text: narration ? 'Narration on. It speaks once the text-to-speech server is live.' : 'Narration off.',
-    });
+    if (!narration) {
+      setMessage({ ok: true, text: 'Narration off.' });
+      return;
+    }
+    setMessage({ ok: true, text: 'Narration on. Testing the voice…' });
+    try {
+      await narrate('Narration on. Crintx will read out where each buzz happened.');
+      setMessage({ ok: true, text: 'Narration on. After each buzz, Crintx reads out where you are.' });
+    } catch (e: any) {
+      setMessage({ ok: false, text: `Narration is on, but the voice didn’t play: ${e?.message ?? 'unknown error'}` });
+    }
   }
 
   const levels = prefs?.levels ?? { buzzer: 100, motor: 100 };
