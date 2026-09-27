@@ -2,6 +2,13 @@
 
 Goal active. Full demo is **not verified**.
 
+## Rebase correction — current status
+- Rebased both prototype commits onto main bd42ae7. Preserved the current redesign, backend, firmware, UTC API and tag-name changes.
+- Entry point moved into Settings + AI; obsolete tab Setup route removed. Existing Metro scripts retained.
+- TypeScript and all 18 tests pass. Diff confirms backend, firmware, existing AI, API/location and app configuration match main.
+- Android Metro export PASS: 1,918 modules, JavaScript-only (--no-bytecode), output artifacts/rebased-js-check. This is not an APK or native runtime verification.
+- Earlier entries below are historical; their outdated-baseline warning is superseded by this rebase.
+
 ## Prototype review shipment
 - User authorized pushing the renamed recovery-history prototype for review. Current main inspected at bd42ae7; this branch remains based on 66dd14e.
 - Newer main UI/API/backend changes are not merged. See PROTOTYPE_VS_MAIN.md for concrete additions and outstanding integration.
