@@ -9,7 +9,7 @@ services:
     environment:
       - MONGODB_URI=${MONGODB_URI}
       - SPRING_PROFILES_ACTIVE=prod
-      - TTS_PROVIDER=${TTS_PROVIDER:-none}
+      - TTS_PROVIDER=${TTS_PROVIDER:-elevenlabs}
       - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY:-}
       - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID:-EXAVITQu4vr4xnSDxMaL}
     restart: unless-stopped
