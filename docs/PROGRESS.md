@@ -2,7 +2,11 @@
 
 Goal active. Full demo is **not verified**.
 
-## Rebase correction — current status
+## Latest rebase
+- Rebased cleanly onto main d56c2ad (Auto buzz thing), retaining its automatic buzz changes.
+- TypeScript and all 18 history tests pass. No new device or APK verification.
+
+## Rebase correction — previous status
 - Rebased both prototype commits onto main bd42ae7. Preserved the current redesign, backend, firmware, UTC API and tag-name changes.
 - Entry point moved into Settings + AI; obsolete tab Setup route removed. Existing Metro scripts retained.
 - TypeScript and all 18 tests pass. Diff confirms backend, firmware, existing AI, API/location and app configuration match main.

@@ -1,6 +1,6 @@
 # Development build compatibility
 
-Rebased onto origin/main at bd42ae7, including its redesigned frontend and updated backend.
+Rebased onto origin/main at d56c2ad, including its redesigned frontend and updated backend.
 
 Main already declares llama.rn 0.13.0-rc.6, AsyncStorage 2.2.0, expo-location ~57.0.20, expo-file-system ~57.0.7, react-native-ble-plx ^3.5.1 and expo-dev-client ~57.0.19. Android location and BLE permissions are configured.
 

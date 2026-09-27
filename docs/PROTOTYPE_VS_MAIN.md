@@ -1,6 +1,6 @@
 # Prototype compared with main
 
-AI-Prototyping is rebased onto origin/main bd42ae7. Main's current UI, navigation, UTC API contract, local tag-name mapping, backend, firmware and deployment changes are retained.
+AI-Prototyping is rebased onto origin/main d56c2ad. Main's current UI, navigation, UTC API contract, local tag-name mapping, backend, firmware and deployment changes are retained.
 
 ## Additions
 - Settings + AI now includes a Recovery history button opening the separate prototype screens.
