@@ -111,13 +111,44 @@ export function formatDistance(m: number): string {
   return `${(m / 1000).toFixed(m < 10_000 ? 1 : 0)} km`;
 }
 
-/** "Street 12, City, Country" for a point, or null if the phone's geocoder has nothing. */
+/** Joins address parts, skipping blanks and repeats ("Bella Vista, Bella Vista"). */
+const joinParts = (parts: (string | null | undefined)[]) =>
+  [...new Set(parts.filter((p): p is string => !!p?.trim()))].join(', ') || null;
+
+/**
+ * "Street 12, Area, City, Country" for a point, or null if nothing knows it.
+ * Tries the phone's own geocoder first; phones and tablets without Google Play
+ * services (e.g. Amazon Fire) return nothing there, so fall back to
+ * OpenStreetMap's free lookup (Nominatim: no key, ~1 request/second allowed).
+ */
 export async function describePlace(c: Coords): Promise<string | null> {
   try {
     const [p] = await Location.reverseGeocodeAsync(c);
-    if (!p) return null;
-    return [p.name ?? p.street, p.city ?? p.subregion, p.country].filter(Boolean).join(', ') || null;
+    const local = p && joinParts([p.name ?? p.street, p.district, p.city ?? p.subregion, p.country]);
+    if (local) return local;
+  } catch {
+    // no geocoder on this device; try OpenStreetMap
+  }
+  return describePlaceOnline(c);
+}
+
+async function describePlaceOnline({ latitude, longitude }: Coords): Promise<string | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&lat=${latitude}&lon=${longitude}`,
+      // Nominatim's usage policy requires an identifying User-Agent.
+      { headers: { 'User-Agent': 'Crintx/1.0 (github.com/FrLagoSoft/Crintx)' }, signal: controller.signal }
+    );
+    if (!res.ok) return null;
+    const a = (await res.json())?.address;
+    if (!a) return null;
+    const street = [a.house_number, a.road].filter(Boolean).join(' ');
+    return joinParts([street, a.suburb ?? a.neighbourhood, a.city ?? a.town ?? a.village, a.country]);
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }

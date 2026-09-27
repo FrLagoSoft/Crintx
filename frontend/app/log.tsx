@@ -23,7 +23,7 @@ export default function LogScreen() {
   const point = useMemo(() => ({ latitude: Number(params.lat), longitude: Number(params.lng) }), [params.lat, params.lng]);
   const [me, setMe] = useState<Fix | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
-  const [place, setPlace] = useState<string | null>(null);
+  const [place, setPlace] = useState<string | null | undefined>(undefined); // undefined = still looking
 
   useEffect(() => {
     describePlace(point).then(setPlace);
@@ -64,7 +64,7 @@ export default function LogScreen() {
           </Text>
 
           <Text className="mt-md font-mono text-sm text-ink" selectable>{formatCoords(point)}</Text>
-          <Text className="mt-xs font-mono text-xs text-dim">{place ?? 'Looking up the address…'}</Text>
+          <Text className="mt-xs font-mono text-xs text-dim">{place === undefined ? 'Looking up the address…' : place ?? 'Address unavailable'}</Text>
           {!!params.acc && (
             <Text className="mt-xs font-mono text-xs text-dim">GPS accurate to ±{Math.round(Number(params.acc))} m</Text>
           )}

@@ -19,7 +19,7 @@ export default function BuzzLocationScreen() {
   const insets = useSafeAreaInsets();
   const [fix, setFix] = useState<Fix | null>(null);
   const [fixError, setFixError] = useState<string | null>(null);
-  const [place, setPlace] = useState<string | null>(null);
+  const [place, setPlace] = useState<string | null | undefined>(undefined); // undefined = still looking
   const [save, setSave] = useState<Save | null>(null);
   const started = useRef(false); // effects run twice in dev; log the buzz once
 
@@ -75,7 +75,7 @@ export default function BuzzLocationScreen() {
             {fix ? (
               <>
                 <Text className="font-title text-3xl text-ink" selectable>{formatCoords(fix)}</Text>
-                <Text className="mt-xs font-mono text-xs text-dim">{place ?? 'Looking up the address…'}</Text>
+                <Text className="mt-xs font-mono text-xs text-dim">{place === undefined ? 'Looking up the address…' : place ?? 'Address unavailable'}</Text>
                 {fix.accuracy != null && (
                   <Text className="mt-xs font-mono text-xs text-dim">GPS accurate to ±{Math.round(fix.accuracy)} m</Text>
                 )}
