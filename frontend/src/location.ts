@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import { api } from './api';
+import { rememberTagName } from './tagNames';
 
 export type Coords = { latitude: number; longitude: number };
 export type Fix = Coords & { accuracy?: number; altitude?: number; speed?: number };
@@ -39,12 +40,20 @@ export async function watchFix(onFix: (fix: Fix) => void): Promise<() => void> {
 
 // ---- Buzz logging -----------------------------------------------------------
 
-const BUZZ_PREFIX = 'BUZZ:';
-
-/** Records where the phone was when it buzzed `tagName`. Pass `fix` if you already have one. */
+/**
+ * Records where the phone was when it buzzed `tagName`. Pass `fix` if you already have one.
+ * The server doesn't store tag names yet, so we also remember id → name on the phone.
+ */
 export async function logBuzzLocation(tagName: string, fix?: Fix) {
   const f = fix ?? (await getCurrentFix());
-  return api.trackLocation({ ...f, activityType: BUZZ_PREFIX + tagName, timestamp: localTimestamp() });
+  const saved = await api.trackLocation({
+    latitude: f.latitude,
+    longitude: f.longitude,
+    timestamp: new Date().toISOString(), // UTC with Z: the server's Instant rejects zone-less times
+    tagName,
+  });
+  await rememberTagName(saved.id, tagName).catch(() => {});
+  return saved;
 }
 
 /** "25.76170° N, 80.19180° W" */
@@ -54,24 +63,24 @@ export function formatCoords({ latitude, longitude }: Coords): string {
   return `${lat}, ${lng}`;
 }
 
-/** The tag name stored with a buzz point, if any. */
-export const buzzTagName = (activityType?: string) =>
-  activityType?.startsWith(BUZZ_PREFIX) ? activityType.slice(BUZZ_PREFIX.length) : undefined;
-
 // ---- Time -------------------------------------------------------------------
-// The server stores LocalDateTime (no time zone). We send the phone's local
-// wall-clock time and read it back as local time, so it's right on the phone.
 
-const pad = (n: number) => String(n).padStart(2, '0');
-
-function localTimestamp(d = new Date()) {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
-
-/** Parses "2026-09-26T14:03:11[.ffffff]" (or with a space) as local time. */
+/**
+ * Parses the server's timestamps. Instants arrive as "2026-09-27T01:36:18.713789900Z"
+ * (up to 9 decimals, which JS Date can't always parse), so read the parts by hand.
+ * A time with no zone at all (old server) is read as phone-local time.
+ */
 export function parseServerTime(s: string): Date | null {
-  const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})/.exec(s);
-  return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) : null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:?\d{2})?$/.exec(s.trim());
+  if (!m) return null;
+  const [, y, mo, d, h, mi, sec, frac, zone] = m;
+  const ms = frac ? Number(frac.slice(0, 3).padEnd(3, '0')) : 0;
+  if (!zone) return new Date(+y, +mo - 1, +d, +h, +mi, +sec, ms);
+  const utc = Date.UTC(+y, +mo - 1, +d, +h, +mi, +sec, ms);
+  if (zone === 'Z') return new Date(utc);
+  const sign = zone[0] === '-' ? -1 : 1;
+  const [oh, om] = [Number(zone.slice(1, 3)), Number(zone.slice(-2))];
+  return new Date(utc - sign * (oh * 60 + om) * 60_000);
 }
 
 export function timeAgo(s: string): string {

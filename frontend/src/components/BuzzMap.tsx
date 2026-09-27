@@ -13,10 +13,10 @@ type Props = {
 };
 
 /**
- * Leaflet map in a WebView. Tiles are CARTO's dark basemap when
- * EXPO_PUBLIC_CARTO_KEY is set, otherwise keyless OpenStreetMap tiles darkened
- * with a CSS filter. Points are pushed in with injectJavaScript, so moving
- * around updates the map without reloading it.
+ * Leaflet map in a WebView. Tiles are CARTO's warm "Voyager" basemap when
+ * EXPO_PUBLIC_CARTO_KEY is set, otherwise keyless OpenStreetMap tiles.
+ * Points are pushed in with injectJavaScript, so moving around updates the
+ * map without reloading it.
  */
 export function BuzzMap({ lastBuzz, me = null, height, fly = false }: Props) {
   const web = useRef<WebView>(null);
@@ -52,14 +52,12 @@ export function BuzzMap({ lastBuzz, me = null, height, fly = false }: Props) {
 
 const TILES = CARTO_KEY
   ? {
-      url: `https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(CARTO_KEY)}`,
+      url: `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(CARTO_KEY)}`,
       attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-      darken: false,
     }
   : {
       url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       attribution: '&copy; OpenStreetMap contributors',
-      darken: true, // OSM has no dark style; invert it to match the app
     };
 
 const HTML = `<!doctype html>
@@ -68,10 +66,9 @@ const HTML = `<!doctype html>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <style>
   html, body, #map { margin: 0; height: 100%; background: ${colors.void}; }
-  .leaflet-control-attribution { background: rgba(14,17,22,.7) !important; color: ${colors.dim}; font-size: 9px; }
+  .leaflet-control-attribution { background: rgba(255,241,226,.8) !important; color: ${colors.dim}; font-size: 9px; }
   .leaflet-control-attribution a { color: ${colors.dim}; }
-  .dot { width: 18px; height: 18px; box-sizing: border-box; border-radius: 50%; border: 3px solid ${colors.void}; }
-  ${TILES.darken ? '.leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9); }' : ''}
+  .dot { width: 18px; height: 18px; box-sizing: border-box; border-radius: 50%; border: 3px solid ${colors.ink}; }
 </style>
 </head><body><div id="map"></div>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>

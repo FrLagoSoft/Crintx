@@ -5,20 +5,29 @@
 
 /**
  * Crintx design tokens. Tailwind v4 is CSS-first (no tailwind.config.js):
- * `--color-signal` gives you `bg-signal`, `text-signal`, `border-signal`, etc.
+ * `--color-ink` gives you `bg-ink`, `text-ink`, `border-ink`, etc.
  *
- * src/theme.ts mirrors the colors for the few places that can't take a
- * className (tab bar, status bar, icons). Change both together.
+ * src/theme.ts mirrors these for the few places that can't take a className
+ * (icons, status bar, the map). Change both together.
  */
 @theme {
-  --color-void: #0e1116;    /* app background */
-  --color-panel: #161b22;   /* cards */
-  --color-edge: #262d36;    /* borders, dividers */
-  --color-text: #e8ecf1;    /* primary text */
-  --color-dim: #8b96a3;     /* secondary text */
-  --color-signal: #ff6a3d;  /* brand accent, primary actions */
-  --color-live: #3ddc97;    /* connected / success */
-  --color-fault: #ff4d5e;   /* errors */
+  --color-void: #ffdab3;    /* page background (peach) */
+  --color-tray: #ffc993;    /* the rounded content tray */
+  --color-ink: #2d2f48;     /* navy: tiles, buttons, primary text */
+  --color-cream: #fff6ec;   /* text on navy, light fields */
+  --color-panel: #fff1e2;   /* light cards (map sheet, AI screen) */
+  --color-edge: #f2b67a;    /* borders, dividers */
+  --color-text: #2d2f48;    /* primary text */
+  --color-dim: #7b6656;     /* secondary text */
+  --color-signal: #ff9a2e;  /* orange accent */
+  --color-soft: #ffc88a;    /* pale orange: current page dot, tracks */
+  --color-live: #2e8b57;    /* connected / success */
+  --color-fault: #d6453d;   /* errors */
+
+  /* Loaded at startup by src/splashgate.tsx (src/fonts.ts). */
+  --font-title: Jost_300Light;
+  --font-heading: Jost_400Regular;
+  --font-mono: IBMPlexMono_400Regular;
 
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -27,5 +36,7 @@
   --spacing-xl: 40px;
 
   --radius-card: 16px;
+  --radius-tile: 24px;
+  --radius-tray: 28px;
   --radius-pill: 999px;
 }

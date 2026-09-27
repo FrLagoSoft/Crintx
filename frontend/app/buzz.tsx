@@ -5,7 +5,6 @@ import { ActivityIndicator, Linking, Platform, Pressable, Text, View } from 'rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BuzzMap } from '../src/components/BuzzMap';
 import { Button } from '../src/components/Button';
-import { Card } from '../src/components/Screen';
 import { describePlace, formatCoords, getCurrentFix, logBuzzLocation, type Fix } from '../src/location';
 import { colors } from '../src/theme';
 
@@ -59,38 +58,37 @@ export default function BuzzLocationScreen() {
       <Pressable
         onPress={() => router.back()}
         accessibilityLabel="Close map"
-        className="absolute rounded-pill border border-edge bg-panel p-sm active:bg-edge"
+        className="absolute rounded-pill border-2 border-cream bg-ink p-sm active:opacity-80"
         style={{ top: insets.top + 8, left: 16 }}
       >
-        <Ionicons name="close" size={22} color={colors.text} />
+        <Ionicons name="close" size={22} color={colors.cream} />
       </Pressable>
 
       <View className="absolute inset-x-0 bottom-0 px-md" style={{ paddingBottom: insets.bottom + 16 }}>
-        <Card>
-          <View className="flex-row items-center gap-sm">
-            <Ionicons name="radio-outline" size={20} color={colors.signal} />
-            <Text className="flex-1 text-lg font-semibold text-text">Buzzed {tag}</Text>
-            <Text className="text-xs text-dim">just now</Text>
+        <View className="rounded-tray bg-panel p-lg">
+          <View className="flex-row items-baseline gap-sm">
+            <Text className="flex-1 font-heading text-2xl text-ink">Buzzed {tag}</Text>
+            <Text className="font-mono text-xs text-dim">just now</Text>
           </View>
 
           <View className="mt-md">
             {fix ? (
               <>
-                <Text className="text-xl font-bold text-text" selectable>{formatCoords(fix)}</Text>
-                <Text className="mt-xs text-dim">{place ?? 'Looking up the address…'}</Text>
+                <Text className="font-title text-3xl text-ink" selectable>{formatCoords(fix)}</Text>
+                <Text className="mt-xs font-mono text-xs text-dim">{place ?? 'Looking up the address…'}</Text>
                 {fix.accuracy != null && (
-                  <Text className="mt-xs text-xs text-dim">GPS accurate to ±{Math.round(fix.accuracy)} m</Text>
+                  <Text className="mt-xs font-mono text-xs text-dim">GPS accurate to ±{Math.round(fix.accuracy)} m</Text>
                 )}
               </>
             ) : fixError ? (
               <>
-                <Text className="text-fault">{fixError}</Text>
+                <Text className="font-mono text-sm text-fault">{fixError}</Text>
                 <Button label="Try again" variant="outline" onPress={locate} className="mt-sm" />
               </>
             ) : (
               <View className="flex-row items-center gap-sm">
-                <ActivityIndicator color={colors.dim} />
-                <Text className="text-dim">Finding your location…</Text>
+                <ActivityIndicator color={colors.ink} />
+                <Text className="font-mono text-sm text-dim">Finding your location…</Text>
               </View>
             )}
           </View>
@@ -103,7 +101,7 @@ export default function BuzzLocationScreen() {
             )}
             <Button label="Done" onPress={() => router.back()} className="flex-1" />
           </View>
-        </Card>
+        </View>
       </View>
     </View>
   );
@@ -115,14 +113,14 @@ function SaveStatus({ save, onRetry }: { save: Save; onRetry: () => void }) {
       {save.state === 'saving' && <ActivityIndicator size="small" color={colors.dim} />}
       {save.state === 'saved' && <Ionicons name="checkmark-circle" size={18} color={colors.live} />}
       {save.state === 'failed' && <Ionicons name="alert-circle" size={18} color={colors.fault} />}
-      <Text className={`flex-1 text-sm ${save.state === 'failed' ? 'text-fault' : 'text-dim'}`}>
+      <Text className={`flex-1 font-mono text-xs ${save.state === 'failed' ? 'text-fault' : 'text-dim'}`}>
         {save.state === 'saving' && 'Saving to your history…'}
         {save.state === 'saved' && 'Saved to your history'}
         {save.state === 'failed' && `Not saved: ${save.reason}`}
       </Text>
       {save.state === 'failed' && (
         <Pressable onPress={onRetry} hitSlop={8}>
-          <Text className="font-semibold text-signal">Retry</Text>
+          <Text className="font-mono text-sm text-ink underline">Retry</Text>
         </Pressable>
       )}
     </View>

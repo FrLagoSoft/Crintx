@@ -7,29 +7,32 @@ import { API_URL } from './config';
  * failures into ApiError with the server's own message.
  */
 
-/** Mirrors LocationPointDTO on the server. Timestamps are zone-less local times. */
+/**
+ * Mirrors LocationPointDTO on the server (feature/dev). Timestamps are UTC
+ * instants, e.g. "2026-09-27T01:36:18.713789900Z".
+ * `tagName` isn't stored by the server yet; see src/tagNames.ts.
+ */
 export type LocationPoint = {
   id: string;
   deviceId: string;
+  userId?: string;
   latitude: number;
   longitude: number;
-  accuracy?: number;
-  altitude?: number;
-  speed?: number;
-  activityType?: string;
   timestamp: string;
   recordedAt?: string;
+  tagName?: string;
 };
 
-/** Mirrors LocationTrackRequestDTO. */
+/**
+ * Mirrors LocationTrackRequestDTO. The device ID goes in the X-Device-Id header,
+ * not the body. `timestamp` must be UTC ISO (Date.toISOString()); a zone-less
+ * time is rejected with 400. `tagName` is ignored until the server adds it.
+ */
 export type TrackLocation = {
   latitude: number;
   longitude: number;
-  accuracy?: number;
-  altitude?: number;
-  speed?: number;
-  activityType?: string;
   timestamp?: string;
+  tagName?: string;
 };
 
 export class ApiError extends Error {
