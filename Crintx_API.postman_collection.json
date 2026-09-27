@@ -1,0 +1,101 @@
+{
+  "info": {
+    "_postman_id": "crintx-location-api",
+    "name": "Crintx - Location API",
+    "description": "Colección de solicitudes de Postman para el módulo de ubicación de Crintx",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Registrar Ubicación (Track Location)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Device-Id",
+            "value": "device-iphone-marco",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"usr_marco_123\",\n  \"latitude\": 8.98238,\n  \"longitude\": -79.51973,\n  \"timestamp\": \"2026-09-26T20:19:04Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/locations/track",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "locations",
+            "track"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Obtener Última Ubicación (Get Latest)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/locations/device-iphone-marco/latest",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "locations",
+            "device-iphone-marco",
+            "latest"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Obtener Historial (Get History)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/locations/device-iphone-marco/history?limit=50",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "v1",
+            "locations",
+            "device-iphone-marco",
+            "history"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "50"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

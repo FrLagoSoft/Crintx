@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +18,8 @@ public interface SpringDataMongoLocationRepository extends MongoRepository<Devic
     @Query("{ 'deviceId': ?0, 'timestamp': { $gte: ?1, $lte: ?2 } }")
     List<DeviceLocationDocument> findHistoryByDeviceIdAndRange(
         String deviceId,
-        LocalDateTime from,
-        LocalDateTime to,
+        Instant from,
+        Instant to,
         Pageable pageable
     );
 

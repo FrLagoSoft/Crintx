@@ -8,7 +8,7 @@ import dev.crintx.crintx.modules.location.dto.LocationTrackRequestDTO;
 import dev.crintx.crintx.modules.location.port.out.LocationRepositoryPort.LocationRecordData;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,16 +21,11 @@ public class LocationMapper {
             dto.userId(),
             dto.latitude(),
             dto.longitude(),
-            dto.speed(),
-            dto.accuracy(),
-            dto.altitude(),
-            dto.batteryLevel(),
-            dto.activityType(),
-            dto.timestamp() != null ? dto.timestamp() : LocalDateTime.now()
+            dto.timestamp() != null ? dto.timestamp() : Instant.now()
         );
     }
 
-    public GetLocationHistoryCommand toHistoryCommand(String deviceId, LocalDateTime from, LocalDateTime to, Integer limit) {
+    public GetLocationHistoryCommand toHistoryCommand(String deviceId, Instant from, Instant to, Integer limit) {
         return new GetLocationHistoryCommand(
             deviceId,
             from,
@@ -46,13 +41,8 @@ public class LocationMapper {
             command.userId(),
             command.latitude(),
             command.longitude(),
-            command.speed(),
-            command.accuracy(),
-            command.altitude(),
-            command.batteryLevel(),
-            command.activityType(),
             command.timestamp(),
-            LocalDateTime.now()
+            Instant.now()
         );
     }
 
@@ -63,11 +53,6 @@ public class LocationMapper {
             data.userId(),
             data.latitude(),
             data.longitude(),
-            data.speed(),
-            data.accuracy(),
-            data.altitude(),
-            data.batteryLevel(),
-            data.activityType(),
             data.timestamp(),
             data.recordedAt()
         );

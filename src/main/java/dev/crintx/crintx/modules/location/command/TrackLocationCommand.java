@@ -1,6 +1,6 @@
 package dev.crintx.crintx.modules.location.command;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Command inmutable para registrar una nueva coordenada de ubicación de un dispositivo.
@@ -10,12 +10,7 @@ public record TrackLocationCommand(
     String userId,
     Double latitude,
     Double longitude,
-    Double speed,
-    Double accuracy,
-    Double altitude,
-    Integer batteryLevel,
-    String activityType,
-    LocalDateTime timestamp
+    Instant timestamp
 ) {
     public TrackLocationCommand {
         if (deviceId == null || deviceId.isBlank()) {
@@ -28,7 +23,7 @@ public record TrackLocationCommand(
             throw new IllegalArgumentException("La longitud debe estar entre -180 y 180 grados");
         }
         if (timestamp == null) {
-            timestamp = LocalDateTime.now();
+            timestamp = Instant.now();
         }
     }
 }

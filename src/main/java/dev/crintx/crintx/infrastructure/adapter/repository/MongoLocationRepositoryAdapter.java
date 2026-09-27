@@ -6,11 +6,14 @@ import dev.crintx.crintx.modules.location.port.out.LocationRepositoryPort;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
 @Repository
+@ConditionalOnProperty(name = "app.storage.type", havingValue = "mongodb")
 public class MongoLocationRepositoryAdapter implements LocationRepositoryPort {
 
     private final SpringDataMongoLocationRepository mongoRepository;
@@ -27,13 +30,8 @@ public class MongoLocationRepositoryAdapter implements LocationRepositoryPort {
             data.userId(),
             data.latitude(),
             data.longitude(),
-            data.speed(),
-            data.accuracy(),
-            data.altitude(),
-            data.batteryLevel(),
-            data.activityType(),
             data.timestamp(),
-            data.recordedAt() != null ? data.recordedAt() : LocalDateTime.now()
+            data.recordedAt() != null ? data.recordedAt() : Instant.now()
         );
 
         DeviceLocationDocument saved = mongoRepository.save(doc);
@@ -41,7 +39,7 @@ public class MongoLocationRepositoryAdapter implements LocationRepositoryPort {
     }
 
     @Override
-    public List<LocationRecordData> findHistory(String deviceId, LocalDateTime from, LocalDateTime to, int limit) {
+    public List<LocationRecordData> findHistory(String deviceId, Instant from, Instant to, int limit) {
         PageRequest pageRequest = PageRequest.of(0, Math.min(limit, 500));
         List<DeviceLocationDocument> docs;
 
@@ -67,11 +65,6 @@ public class MongoLocationRepositoryAdapter implements LocationRepositoryPort {
             doc.getUserId(),
             doc.getLatitude(),
             doc.getLongitude(),
-            doc.getSpeed(),
-            doc.getAccuracy(),
-            doc.getAltitude(),
-            doc.getBatteryLevel(),
-            doc.getActivityType(),
             doc.getTimestamp(),
             doc.getRecordedAt()
         );

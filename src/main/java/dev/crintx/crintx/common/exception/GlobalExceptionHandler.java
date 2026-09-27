@@ -37,6 +37,30 @@ public class GlobalExceptionHandler {
             .body(ApiResponseDTO.error(ResponseCode.BAD_REQUEST.getCode(), ex.getMessage()));
     }
 
+    @ExceptionHandler(org.springframework.web.bind.MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleMissingHeader(org.springframework.web.bind.MissingRequestHeaderException ex) {
+        log.warn("Missing required header: {}", ex.getHeaderName());
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponseDTO.error(ResponseCode.BAD_REQUEST.getCode(), "Encabezado requerido no presente: " + ex.getHeaderName()));
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleMissingParam(org.springframework.web.bind.MissingServletRequestParameterException ex) {
+        log.warn("Missing required parameter: {}", ex.getParameterName());
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponseDTO.error(ResponseCode.BAD_REQUEST.getCode(), "Parámetro requerido no presente: " + ex.getParameterName()));
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleValidationException(org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        log.warn("Validation failed: {}", ex.getMessage());
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponseDTO.error(ResponseCode.BAD_REQUEST.getCode(), "Error de validación en la solicitud"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleGenericException(Exception ex) {
         log.error("Unhandled Exception: ", ex);

@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Document(collection = "device_locations")
 @CompoundIndex(name = "device_timestamp_idx", def = "{'deviceId': 1, 'timestamp': -1}")
@@ -28,16 +28,11 @@ public class DeviceLocationDocument {
 
     private Double latitude;
     private Double longitude;
-    private Double speed;
-    private Double accuracy;
-    private Double altitude;
-    private Integer batteryLevel;
-    private String activityType;
 
     @Indexed
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 
-    private LocalDateTime recordedAt;
+    private Instant recordedAt;
 
     public DeviceLocationDocument() {}
 
@@ -47,13 +42,8 @@ public class DeviceLocationDocument {
         String userId,
         Double latitude,
         Double longitude,
-        Double speed,
-        Double accuracy,
-        Double altitude,
-        Integer batteryLevel,
-        String activityType,
-        LocalDateTime timestamp,
-        LocalDateTime recordedAt
+        Instant timestamp,
+        Instant recordedAt
     ) {
         this.id = id;
         this.deviceId = deviceId;
@@ -63,11 +53,6 @@ public class DeviceLocationDocument {
         if (longitude != null && latitude != null) {
             this.location = new GeoJsonPoint(longitude, latitude);
         }
-        this.speed = speed;
-        this.accuracy = accuracy;
-        this.altitude = altitude;
-        this.batteryLevel = batteryLevel;
-        this.activityType = activityType;
         this.timestamp = timestamp;
         this.recordedAt = recordedAt;
     }
@@ -120,59 +105,19 @@ public class DeviceLocationDocument {
         this.longitude = longitude;
     }
 
-    public Double getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(Double speed) {
-        this.speed = speed;
-    }
-
-    public Double getAccuracy() {
-        return accuracy;
-    }
-
-    public void setAccuracy(Double accuracy) {
-        this.accuracy = accuracy;
-    }
-
-    public Double getAltitude() {
-        return altitude;
-    }
-
-    public void setAltitude(Double altitude) {
-        this.altitude = altitude;
-    }
-
-    public Integer getBatteryLevel() {
-        return batteryLevel;
-    }
-
-    public void setBatteryLevel(Integer batteryLevel) {
-        this.batteryLevel = batteryLevel;
-    }
-
-    public String getActivityType() {
-        return activityType;
-    }
-
-    public void setActivityType(String activityType) {
-        this.activityType = activityType;
-    }
-
-    public LocalDateTime getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
 
-    public LocalDateTime getRecordedAt() {
+    public Instant getRecordedAt() {
         return recordedAt;
     }
 
-    public void setRecordedAt(LocalDateTime recordedAt) {
+    public void setRecordedAt(Instant recordedAt) {
         this.recordedAt = recordedAt;
     }
 }

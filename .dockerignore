@@ -2,7 +2,6 @@ target/
 .git/
 .gitignore
 .idea/
-*.iml
-.mvn/wrapper/maven-wrapper.jar
-Dockerfile
-*.log
+.vscode/
+*.md
+Crintx_API.postman_collection.json

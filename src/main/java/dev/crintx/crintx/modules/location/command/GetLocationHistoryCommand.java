@@ -1,11 +1,11 @@
 package dev.crintx.crintx.modules.location.command;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record GetLocationHistoryCommand(
     String deviceId,
-    LocalDateTime from,
-    LocalDateTime to,
+    Instant from,
+    Instant to,
     int limit
 ) {
     public GetLocationHistoryCommand {
