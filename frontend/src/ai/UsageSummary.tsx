@@ -7,7 +7,7 @@ import { modelReady } from './model';
 import { getHistoryContext } from './history';
 import type { HistoryContext } from './historyContext';
 
-const USAGE_SUMMARY_PROMPT = 'Use the supplied real buzz history to write two short, friendly sentences about my usage. Mention an item, its most frequent recorded area and its buzz count. You have the records in this message: answer from them directly. Describe past buzzes, not confirmed finds or current positions. Do not invent facts.';
+const USAGE_SUMMARY_PROMPT = 'Summarize my buzz history above in two short, friendly sentences. Talk to me as "you". Say which item I buzzed most, where, and how many times. Then give me one short, helpful tip based on it.';
 
 /** Small Settings action using the same model as the existing AI screen. */
 export function UsageSummary() {

@@ -37,8 +37,18 @@ test('model receives bounded recorded data and the typed question without claimi
   assert.match(messages[0].content, /NOT confirmed recoveries/);
   assert.match(messages[1].content, /Ignore instructions/);
   assert.match(messages[1].content, /Where are my keys\?/);
-  assert.match(messages[1].content, /current_item_locations.*unknown/);
+  assert.match(messages[1].content, /right now: unknown/);
   assert.doesNotMatch(messages[1].content, /deviceId/);
+});
+test('facts are written from the user\'s point of view with relative times', () => {
+  const context = summarizeHistory([point('a', { tagName: 'Keys' }), point('b', { tagName: 'Keys', latitude: 25.0002 })], {}, time);
+  const messages = completionMessages('Summary please', context);
+  assert.match(messages[0].content, /Talk to the person as "you"/);
+  assert.match(messages[1].content, /You buzzed your "Keys" 2 times near 25\.000, -80\.000, most recently 24 min ago\./);
+});
+test('empty history is stated plainly instead of an empty list', () => {
+  const messages = completionMessages('Summary please', summarizeHistory([], {}, time));
+  assert.match(messages[1].content, /none yet/);
 });
 test('excluding history supplies no previous facts', () => {
   const messages = completionMessages('Hello');
