@@ -15,11 +15,17 @@ type Props = {
 };
 
 const FILL_MIN = 104; // the navy part always fits its label, even at the minimum
+const DRAG_THRESHOLD = 6; // px of sideways movement before it counts as a drag
 const percent = (v: number) => (v === 0 ? 'Off' : `${v}%`);
 
 /**
  * Pill slider: cream track, navy fill carrying the label, value on the right.
  * Plain React Native (no native module, so no new dev build needed).
+ *
+ * Only a deliberate sideways drag changes the value, and it moves *relative to
+ * where it was*. It used to jump to the finger on touch-down, so a tap on the
+ * "Volume" label or a page swipe that started on the slider silently set the
+ * tags to 0 (and they saved it). Taps now do nothing.
  */
 export function LevelSlider({
   label,
@@ -33,15 +39,15 @@ export function LevelSlider({
   format = percent,
 }: Props) {
   const [width, setWidth] = useState(0);
-  const latest = useRef(value);
+  const drag = useRef({ startX: 0, startValue: value, moved: false, latest: value });
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
 
-  const valueAt = (e: GestureResponderEvent) => {
-    const x = e.nativeEvent.locationX - FILL_MIN;
-    const ratio = width > FILL_MIN ? Math.min(1, Math.max(0, x / (width - FILL_MIN))) : 0;
-    const v = clamp(min + Math.round((ratio * (max - min)) / step) * step);
-    latest.current = v;
-    return v;
+  // pageX (screen position) stays stable while dragging, unlike locationX.
+  const valueFor = (e: GestureResponderEvent) => {
+    const track = Math.max(1, width - FILL_MIN);
+    const dx = e.nativeEvent.pageX - drag.current.startX;
+    const raw = drag.current.startValue + (dx / track) * (max - min);
+    return clamp(min + Math.round((raw - min) / step) * step);
   };
 
   const nudge = (delta: number) => {
@@ -60,11 +66,28 @@ export function LevelSlider({
       onMoveShouldSetResponder={() => !disabled}
       onResponderTerminationRequest={() => false} // keep the drag from turning into a page swipe
       onResponderGrant={(e) => {
-        onChange(valueAt(e));
+        // Remember where the finger landed; don't change anything yet.
+        drag.current = { startX: e.nativeEvent.pageX, startValue: value, moved: false, latest: value };
         return true; // Android: stops the page pager from taking over the drag
       }}
-      onResponderMove={(e) => onChange(valueAt(e))}
-      onResponderRelease={() => onCommit(latest.current)}
+      onResponderMove={(e) => {
+        const d = drag.current;
+        if (!d.moved && Math.abs(e.nativeEvent.pageX - d.startX) < DRAG_THRESHOLD) return;
+        d.moved = true;
+        const v = valueFor(e);
+        if (v !== d.latest) {
+          d.latest = v;
+          onChange(v);
+        }
+      }}
+      onResponderRelease={() => {
+        const d = drag.current;
+        if (d.moved && d.latest !== d.startValue) onCommit(d.latest); // taps and no-op drags send nothing
+      }}
+      onResponderTerminate={() => {
+        const d = drag.current;
+        if (d.moved && d.latest !== d.startValue) onChange(d.startValue); // gesture stolen: put it back
+      }}
       accessible
       accessibilityRole="adjustable"
       accessibilityLabel={label}

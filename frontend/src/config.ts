@@ -28,5 +28,6 @@ export const BLE = {
   LEVELS_CHAR_UUID: 'ca83ff33-6353-4c51-971d-96d17289199f', // [buzzer 0-100, motor 0-100]
   CMD_BUZZ: 0x01, // [0x01] or [0x01, duration × 100 ms]
   CMD_WAVE: 0x02, // [0x02, onLo, onHi, offLo, offHi, duration × 100 ms], on/off in µs
+  CMD_SONG: 0x03, // [0x03] easter egg: "Happy Birthday" rhythm (~10 s); needs the new firmware
   NAME_MAX_LEN: 20,
 } as const;

@@ -13,18 +13,22 @@ type Props = {
   width: number; // one screen wide, set by the pager
   height: number; // measured by the pager (a horizontal ScrollView gives pages no height)
   children: ReactNode; // tray contents
+  /** Optional hidden tap target on the title (no visual change). */
+  onTitlePress?: () => void;
 };
 
 /** Content stays phone-width and centered on tablets, like the mockup. */
 const MAX_CONTENT_WIDTH = 520;
 
 /** One pager page: title + underline, the peach tray, the action button. */
-export function Page({ title, subtitle, action, message, width, height, children }: Props) {
+export function Page({ title, subtitle, action, message, width, height, children, onTitlePress }: Props) {
   return (
     <View style={{ width, height }} className="items-center px-md">
       <View style={{ flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH }}>
         <View className="items-center pt-lg pb-md">
-          <Text className="font-title text-5xl text-ink">{title}</Text>
+          <Text className="font-title text-5xl text-ink" onPress={onTitlePress} suppressHighlighting>
+            {title}
+          </Text>
           <Text className="mt-xs font-mono text-sm text-ink">{subtitle}</Text>
           <View className="mt-xs h-1 w-44 rounded-pill bg-ink" />
         </View>

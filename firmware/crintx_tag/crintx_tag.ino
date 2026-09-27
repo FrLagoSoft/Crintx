@@ -24,7 +24,7 @@
 // ---- Work queue -------------------------------------------------------------
 // BLE callbacks run on the Bluetooth task. Buzzing there would stall the radio,
 // so callbacks only queue a job and loop() runs it.
-enum JobKind : uint8_t { JOB_BUZZ, JOB_WAVE };
+enum JobKind : uint8_t { JOB_BUZZ, JOB_WAVE, JOB_SONG };
 struct Job { JobKind kind; uint32_t onUs; uint32_t offUs; uint32_t ms; };
 
 static volatile bool jobPending = false;
@@ -156,6 +156,48 @@ static void runSweep() {
   Serial.println("Sweep done.");
 }
 
+/**
+ * Easter egg: "Happy Birthday" in rhythm. An active buzzer has one fixed pitch,
+ * so the melody's shape is carried by loudness instead: higher notes play louder
+ * (PWM duty), lower notes softer. Scaled by the saved buzzer level, so Volume
+ * still controls it and Off keeps it silent. The motor taps at each line's end.
+ */
+struct SongNote { uint8_t midi; uint8_t sixteenths; };  // midi 0 = rest
+static const SongNote HAPPY_BIRTHDAY[] = {
+  {67, 3}, {67, 1}, {69, 4}, {67, 4}, {72, 4}, {71, 8}, {0, 2},           // Happy birthday to you
+  {67, 3}, {67, 1}, {69, 4}, {67, 4}, {74, 4}, {72, 8}, {0, 2},           // Happy birthday to you
+  {67, 3}, {67, 1}, {79, 4}, {76, 4}, {72, 4}, {71, 4}, {69, 8}, {0, 2},  // Happy birthday dear ...
+  {77, 3}, {77, 1}, {76, 4}, {72, 4}, {74, 4}, {72, 12},                  // Happy birthday to you
+};
+static const uint32_t SIXTEENTH_MS = 90;  // one beat = 360 ms; the whole song is ~10 s
+
+static void runSong() {
+  const uint8_t lowest = 67, highest = 79;
+  const size_t count = sizeof(HAPPY_BIRTHDAY) / sizeof(HAPPY_BIRTHDAY[0]);
+  for (size_t i = 0; i < count; i++) {
+    const SongNote &n = HAPPY_BIRTHDAY[i];
+    uint32_t length = n.sixteenths * SIXTEENTH_MS;
+    if (n.midi == 0) {
+      delay(length);
+      continue;
+    }
+    // 40% loudness on the lowest note up to 100% on the highest, times the saved level.
+    uint32_t contour = 40 + (uint32_t)(n.midi - lowest) * 60 / (highest - lowest);
+    uint8_t level = buzzerLevel == 0 ? 0 : max<uint32_t>(1, buzzerLevel * contour / 100);
+    bool lineEnd = n.sixteenths >= 8;
+    bool finale = (i == count - 1);
+
+    uint32_t on = length * 85 / 100;  // a short gap so repeated notes stay separate
+    ledcWrite(BUZZER_PIN, levelToDuty(level, BUZZER_MIN_DUTY));
+    if (lineEnd) ledcWrite(MOTOR_PIN, levelToDuty(motorLevel, MOTOR_MIN_DUTY));
+    delay(finale ? on : (lineEnd ? min<uint32_t>(on, 250) : on));
+    ledcWrite(MOTOR_PIN, 0);
+    if (lineEnd && !finale && on > 250) delay(on - 250);  // motor taps briefly; the buzzer holds the note
+    ledcWrite(BUZZER_PIN, 0);
+    delay(length - on);
+  }
+}
+
 // ---- BLE --------------------------------------------------------------------
 class ServerCallbacks : public BLEServerCallbacks {
   // Without this, a tag goes invisible after the first phone disconnects.
@@ -167,6 +209,7 @@ class ServerCallbacks : public BLEServerCallbacks {
  *   [0x01]                         buzz for BUZZ_MS at the saved levels
  *   [0x01, t]                      buzz for t * 100 ms
  *   [0x02, onLo, onHi, offLo, offHi, t]   buzzer wave: on/off in us (uint16, little-endian), t * 100 ms
+ *   [0x03]                         easter egg: "Happy Birthday" rhythm (~10 s)
  */
 class CommandCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *c) override {
@@ -183,6 +226,9 @@ class CommandCallbacks : public BLECharacteristicCallbacks {
           uint32_t off = b[3] | (b[4] << 8);
           if (on + off > 0) queueJob(JOB_WAVE, on, off, b[5] * 100u);
         }
+        break;
+      case 0x03:
+        queueJob(JOB_SONG, 0, 0, 0);
         break;
     }
   }
@@ -205,6 +251,8 @@ class LevelsCallbacks : public BLECharacteristicCallbacks {
       return;
     }
     setLevels(c->getData()[0], c->getData()[1]);
+    // Logged so a surprise "volume 0" can be traced to the phone that sent it.
+    Serial.printf("Levels set over Bluetooth: buzzer %u, vibration %u (saved)\n", buzzerLevel, motorLevel);
     queueJob(JOB_BUZZ, 0, 0, PREVIEW_MS);
   }
 };
@@ -257,6 +305,7 @@ static void printHelp() {
       "  hold [ms]            buzzer 100% on (the baseline to compare against)\n"
       "  wave <on_us> <off_us> [ms]   buzzer square wave with those delays\n"
       "  sweep                step through delays 125us..2500us\n"
+      "  song                 easter egg: Happy Birthday (rhythm + loudness)\n"
       "  help");
 }
 
@@ -319,6 +368,9 @@ static void handleLine(String line) {
     runWave(on, off, ms);
   } else if (cmd == "sweep") {
     runSweep();
+  } else if (cmd == "song") {
+    Serial.println("Happy birthday!");
+    runSong();
   } else {
     printHelp();
   }
@@ -355,6 +407,7 @@ void loop() {
 
   if (jobPending) {
     if (job.kind == JOB_BUZZ) runBuzz(job.ms);
+    else if (job.kind == JOB_SONG) runSong();
     else runWave(job.onUs, job.offUs, job.ms);
     jobPending = false;
   }

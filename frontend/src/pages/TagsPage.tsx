@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { buzz, renameTag, scanForTags, stopScan, validateName, type Tag } from '../ble';
+import { buzz, playSong, renameTag, scanForTags, stopScan, validateName, type Tag } from '../ble';
 import { Page, TrayHint } from '../components/Page';
 import { RenameSheet } from '../components/RenameSheet';
 import { TagTile } from '../components/TagTile';
@@ -68,6 +68,37 @@ export function TagsPage({ width, height, tags, setTags, bleBusy, setBleBusy }: 
     }
   }
 
+  // Easter egg: tap the "Crintx" title 5 times quickly → every scanned tag plays "Happy Birthday".
+  const titleTaps = useRef<number[]>([]);
+  function onTitleTap() {
+    const now = Date.now();
+    titleTaps.current = [...titleTaps.current.filter((t) => now - t < 2500), now];
+    if (titleTaps.current.length < 5) return;
+    titleTaps.current = [];
+    party();
+  }
+
+  async function party() {
+    if (bleBusy) return;
+    if (!tags.length) {
+      setMessage({ ok: true, text: '🎂 Scan for tags first, then try that again.' });
+      return;
+    }
+    setBleBusy(true);
+    setMessage({ ok: true, text: '🎂 Happy birthday!' });
+    let reached = 0;
+    for (const tag of tags) {
+      try {
+        await playSong(tag.id); // the tag plays it on its own (~10 s) once the command lands
+        reached++;
+      } catch {
+        // out of range; the message counts it
+      }
+    }
+    setBleBusy(false);
+    setMessage({ ok: reached > 0, text: `🎂 Happy birthday! Playing on ${reached}/${tags.length} tag${tags.length > 1 ? 's' : ''}.` });
+  }
+
   async function saveName(draft: string) {
     if (!renaming) return;
     let name: string;
@@ -89,6 +120,7 @@ export function TagsPage({ width, height, tags, setTags, bleBusy, setBleBusy }: 
       width={width}
       height={height}
       title="Crintx"
+      onTitlePress={onTitleTap}
       subtitle="Finding made easy"
       action={{ label: scanning ? 'Scanning…' : 'Scan for tags!', onPress: scan, loading: scanning, disabled: bleBusy }}
       message={message ?? (tags.length ? { ok: true, text: 'Tap a tag to buzz it · hold to rename' } : null)}

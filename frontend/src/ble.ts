@@ -131,6 +131,11 @@ export function playWave(id: string, onUs: number, offUs: number, ms = 1000) {
   return withTag(id, (m) => write(m, id, BLE.COMMAND_CHAR_UUID, bytes));
 }
 
+/** Easter egg: the tag plays "Happy Birthday" (~10 s). Tags on older firmware ignore it. */
+export function playSong(id: string) {
+  return withTag(id, (m) => write(m, id, BLE.COMMAND_CHAR_UUID, [BLE.CMD_SONG]));
+}
+
 /** Throws a readable message if the tag would reject this name. */
 export function validateName(name: string): string {
   const n = name.trim();
