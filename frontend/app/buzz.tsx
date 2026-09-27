@@ -115,7 +115,7 @@ function SaveStatus({ save, onRetry }: { save: Save; onRetry: () => void }) {
       {save.state === 'failed' && <Ionicons name="alert-circle" size={18} color={colors.fault} />}
       <Text className={`flex-1 font-mono text-xs ${save.state === 'failed' ? 'text-fault' : 'text-dim'}`}>
         {save.state === 'saving' && 'Saving to your history…'}
-        {save.state === 'saved' && 'Saved to your history'}
+        {save.state === 'saved' && 'Saved on this phone'}
         {save.state === 'failed' && `Not saved: ${save.reason}`}
       </Text>
       {save.state === 'failed' && (

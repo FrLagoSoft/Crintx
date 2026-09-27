@@ -2,6 +2,7 @@
 export type BuzzPoint = { id: string; latitude: number; longitude: number; timestamp: string; tagName?: string };
 export type BuzzGroup = { tag: string; count: number; latest: string; latitude: number; longitude: number; place: string };
 export type HistoryContext = {
+  source?: string;
   status: 'ready' | 'empty' | 'unavailable';
   fetchedAt: string;
   records: number;

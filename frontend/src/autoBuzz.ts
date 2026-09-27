@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { buzz, type Tag } from './ble';
+import { getCurrentFix, logBuzzLocation } from './location';
 
 // Loaded defensively: if a dev build lacked the native module, auto-buzz still
 // works and the screen may just dim, instead of the home screen crashing.
@@ -23,7 +24,7 @@ export type AutoBuzzStatus = {
  *
  * Only runs while Crintx is open: phones pause app timers in the background,
  * and the Bluetooth library can't buzz from there. So while it's on, the
- * screen is kept awake. Auto-buzzes are not logged to the server.
+ * screen is kept awake. Successful auto-buzzes are saved locally when a location fix is available.
  */
 export function useAutoBuzz(
   minutes: number,
@@ -64,18 +65,30 @@ export function useAutoBuzz(
       }
       setBleBusy(true);
       let reached = 0;
+      const reachedTags: Tag[] = [];
       for (const tag of list) {
         if (stopped) break;
         try {
           await buzz(tag.id);
           reached++;
+          reachedTags.push(tag);
         } catch {
           // out of range or switched off; the status line reports it
         }
       }
       setBleBusy(false);
+      let recorded = 0;
+      if (reachedTags.length && !stopped) {
+        try {
+          const fix = await getCurrentFix();
+          for (const tag of reachedTags) {
+            await logBuzzLocation(tag.name, fix);
+            recorded++;
+          }
+        } catch { /* Report missing location/history without calling a successful buzz a failure. */ }
+      }
       const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      setLast(`Auto-buzzed ${reached}/${list.length} tag${list.length > 1 ? 's' : ''} at ${time}`);
+      setLast(`Auto-buzzed ${reached}/${list.length} tag${list.length > 1 ? 's' : ''} at ${time}. Saved ${recorded} location records.`);
       if (!stopped) schedule(interval);
     }
 

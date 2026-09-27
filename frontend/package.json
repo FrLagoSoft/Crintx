@@ -51,7 +51,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "node --experimental-strip-types --test src/ai/*.test.ts",
+    "test": "node --experimental-strip-types --test src/ai/*.test.ts src/buzzHistoryStore.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "private": true

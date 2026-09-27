@@ -1,6 +1,9 @@
 import * as Location from 'expo-location';
 import { api } from './api';
 import { rememberTagName } from './tagNames';
+import { randomUUID } from 'expo-crypto';
+import { getBuildId } from './buildId';
+import { buzzHistory } from './buzzHistory';
 
 export type Coords = { latitude: number; longitude: number };
 export type Fix = Coords & { accuracy?: number; altitude?: number; speed?: number };
@@ -42,18 +45,25 @@ export async function watchFix(onFix: (fix: Fix) => void): Promise<() => void> {
 
 /**
  * Records where the phone was when it buzzed `tagName`. Pass `fix` if you already have one.
- * The server doesn't store tag names yet, so we also remember id → name on the phone.
+ * Names and locations are saved together locally before a best-effort backend write.
  */
 export async function logBuzzLocation(tagName: string, fix?: Fix) {
   const f = fix ?? (await getCurrentFix());
-  const saved = await api.trackLocation({
+  const point = {
+    id: randomUUID(), deviceId: await getBuildId(),
     latitude: f.latitude,
     longitude: f.longitude,
     timestamp: new Date().toISOString(), // UTC with Z: the server's Instant rejects zone-less times
     tagName,
-  });
-  await rememberTagName(saved.id, tagName).catch(() => {});
-  return saved;
+  };
+  // Persist before trying the server. A network failure cannot lose this buzz.
+  await buzzHistory.save(point);
+  void api.trackLocation({ latitude: point.latitude, longitude: point.longitude, timestamp: point.timestamp, tagName })
+    .then(async saved => {
+      await buzzHistory.save({ ...point, backendId: saved.id });
+      await rememberTagName(saved.id, tagName);
+    }).catch(() => { /* Local copy is already saved; no automatic duplicate retries. */ });
+  return point;
 }
 
 /** "25.76170° N, 80.19180° W" */

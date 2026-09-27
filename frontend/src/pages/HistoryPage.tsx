@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { api, type LocationPoint } from '../api';
+import type { LocationPoint } from '../api';
+import { readBuzzHistory } from '../buzzHistory';
 import { Page, TrayHint } from '../components/Page';
 import { timeAgo } from '../location';
 import { loadTagNames, tagNameFor } from '../tagNames';
@@ -28,7 +29,7 @@ export function HistoryPage({ width, height, active }: Props) {
     setLoading(true);
     setMessage(null);
     try {
-      const [points, tagNames] = await Promise.all([api.locationHistory(20), loadTagNames()]);
+      const [points, tagNames] = await Promise.all([readBuzzHistory(20), loadTagNames()]);
       setNames(tagNames);
       setHistory(points);
     } catch (e: any) {

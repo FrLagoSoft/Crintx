@@ -83,7 +83,7 @@ export default function AskScreen() {
         facts = await getHistoryContext();
         if (!valid()) return;
         setHistory(facts);
-        if (facts.status === 'unavailable') throw new Error('Could not read your buzz history. Check the server connection and try again, or turn off history to ask a general question.');
+        if (facts.status === 'unavailable') throw new Error('Could not read the buzz history saved on this phone. Try again, or turn off history to ask a general question.');
         if (summary && facts.status === 'empty') {
           setOutput('No buzz locations are recorded yet. Buzz a tag using the usual app controls, then try again.');
           return;
@@ -155,7 +155,7 @@ export default function AskScreen() {
           <Text className="flex-1 text-text">Include history in my questions</Text>
           <Switch accessibilityLabel="Include buzz history in AI questions" value={includeHistory} disabled={phase === 'thinking'} onValueChange={value => { setIncludeHistory(value); setHistory(null); setOutput(''); setAnswer(null); }} />
         </View>
-        <Text className="mt-xs text-xs text-dim">History needs the existing server. Area names use the app's existing address lookup; if unavailable, coordinates are shown. No AI cloud service receives the prompt.</Text>
+        <Text className="mt-xs text-xs text-dim">History is saved on this phone. Area names use the app's existing address lookup; if unavailable, coordinates are shown. No AI cloud service receives the prompt.</Text>
         {history && <>
           <Text className="mt-sm text-dim">{history.status === 'ready' ? `${history.records} recent records; ${history.omittedRecords} outside the five most frequent groups.` : history.status === 'empty' ? 'No recorded buzz history yet.' : 'History unavailable.'}</Text>
           <Button variant="outline" label={showFacts ? 'Hide history used' : 'Show history used'} onPress={() => setShowFacts(!showFacts)} />

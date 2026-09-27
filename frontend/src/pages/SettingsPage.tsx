@@ -4,6 +4,7 @@ import { Pressable, Text } from 'react-native';
 import { setLevels, type Levels, type Tag } from '../ble';
 import { LevelSlider } from '../components/LevelSlider';
 import { Page } from '../components/Page';
+import { UsageSummary } from '../ai/UsageSummary';
 import type { Prefs } from '../prefs';
 
 type Props = {
@@ -108,6 +109,7 @@ export function SettingsPage({ width, height, tags, bleBusy, setBleBusy, prefs, 
         onCommit={commitAuto}
         disabled={!prefs}
       />
+      <UsageSummary />
       <Pressable
         onPress={() => router.push('/ask')}
         accessibilityRole="button"

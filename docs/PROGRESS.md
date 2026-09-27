@@ -1,6 +1,13 @@
 # AI history integration progress
 
-## Current scope
+## Temporary real-history storage — current status
+- Backend storage is unavailable. Real manual and successful automatic buzzes with a location fix now save to AsyncStorage first, capped at 500 records. No demo seed data. Backend writes remain best-effort and never block local success; no automatic replay of failed uploads.
+- Both Buzzer History and AI read the same local records. USE_LOCAL_BUZZ_HISTORY in frontend/src/buzzHistory.ts is the temporary switch until backend reads are fixed. Setting it false merges remote records with the local copy, deduplicating acknowledged backend IDs.
+- Settings adds Give me a summary of my usage and an adjacent dropdown showing the grouped facts used. Existing AI screen/model download remain intact; only storage-related text was corrected.
+- Source dropdown is populated when a summary is requested. Empty local history is explicit; old failed backend writes cannot be recovered automatically.
+- TypeScript and 11 tests pass, including storage restart, concurrent saves, failed writes and duplicate acknowledgements. Device inference quality remains unverified.
+
+## Earlier scope
 User superseded the separate offline tracker specification: reuse main's working UI, BLE, server history and model. Remove redundant prototype flows and supply history as context to the existing AI. Full device behavior is not claimed verified.
 
 ## Implemented
