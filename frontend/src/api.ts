@@ -103,16 +103,19 @@ export const api = {
 
   /**
    * Text → speech via the server (ElevenLabs). Returns the MP3 as base64.
-   * The server answers 503 when TTS isn't configured there, and caps text at 500 chars.
+   * Sends the text both as a JSON body (Marcos's modules/tts endpoint, deployed on ECS)
+   * and as ?text= (the older controller/TtsController), so either server version works.
    */
   speak: async (text: string): Promise<string> => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 20_000);
+    const clipped = text.slice(0, 500);
     try {
-      const res = await fetch(`${API_URL}/api/tts/generate?text=${encodeURIComponent(text.slice(0, 500))}`, {
+      const res = await fetch(`${API_URL}/api/tts/generate?text=${encodeURIComponent(clipped)}`, {
         method: 'POST',
         signal: controller.signal,
-        headers: { 'X-Device-Id': await getBuildId() },
+        headers: { 'Content-Type': 'application/json', 'X-Device-Id': await getBuildId() },
+        body: JSON.stringify({ text: clipped }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null);
