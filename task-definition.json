@@ -1,0 +1,38 @@
+{
+  "family": "crintx-backend-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::849449381485:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "crintx-backend-container",
+      "image": "849449381485.dkr.ecr.us-east-1.amazonaws.com/crintx-backend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "PORT",
+          "value": "8080"
+        },
+        {
+          "name": "STORAGE_TYPE",
+          "value": "mongodb"
+        },
+        {
+          "name": "MONGODB_URI",
+          "value": "mongodb+srv://admin:crintx123@cluster0.mongodb.net/crintx?retryWrites=true&w=majority"
+        }
+      ]
+    }
+  ]
+}
