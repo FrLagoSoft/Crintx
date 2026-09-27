@@ -1,5 +1,6 @@
 import * as FileSystem from 'expo-file-system/legacy';
-import * as DocumentPicker from 'expo-document-picker';
+import { requireOptionalNativeModule } from 'expo';
+import { MODEL_PATH as SHARED_MODEL_PATH, modelReady as sharedModelReady } from '../ai/model';
 import { InferenceRunner, MODEL_INSTRUCTIONS } from './inference';
 export { MODEL_INSTRUCTIONS } from './inference';
 export type { ModelFacts, Explanation } from './inference';
@@ -7,9 +8,19 @@ export type { ModelFacts, Explanation } from './inference';
 
 export const MODEL_PATH = `${FileSystem.documentDirectory}tracker-model.gguf`;
 
-export async function hasModel() { return (await FileSystem.getInfoAsync(MODEL_PATH)).exists; }
+async function availableModelPath(): Promise<string | null> {
+  if ((await FileSystem.getInfoAsync(MODEL_PATH)).exists) return MODEL_PATH;
+  return await sharedModelReady() ? SHARED_MODEL_PATH : null;
+}
+
+export async function hasModel() { return (await availableModelPath()) !== null; }
+
+export function canImportModel() { return requireOptionalNativeModule('ExpoDocumentPicker') !== null; }
 
 export async function importModel() {
+  if (!canImportModel()) throw new Error('File import is not included in this build. Download the model from Local AI instead; the tracker can use that file.');
+  // Loading the picker eagerly would crash older development builds at startup.
+  const DocumentPicker = await import('expo-document-picker');
   const selection = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true, multiple: false });
   if (selection.canceled) return false;
   const asset = selection.assets[0];
@@ -31,10 +42,11 @@ export async function importModel() {
 export class LocalInference extends InferenceRunner {
   constructor() {
     super(async () => {
-      if (!await hasModel()) throw new Error('Import a GGUF model in Setup to enable on-device inference.');
+      const model = await availableModelPath();
+      if (!model) throw new Error('Download the model from Local AI or import a GGUF in tracker Setup.');
       const { initLlama, toggleNativeLog } = await import('llama.rn');
       await toggleNativeLog(false);
-      const context = await initLlama({ model: MODEL_PATH, n_ctx: 2048, n_batch: 128, n_threads: 4, n_gpu_layers: 0, use_mlock: false });
+      const context = await initLlama({ model, n_ctx: 2048, n_batch: 128, n_threads: 4, n_gpu_layers: 0, use_mlock: false });
       return {
         complete: async facts => (await context.completion({
           messages: [{ role: 'system', content: MODEL_INSTRUCTIONS }, { role: 'user', content: JSON.stringify(facts) }],

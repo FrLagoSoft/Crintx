@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Alert, Switch, Text, View } from 'react-native';
 import { Card, Screen } from '../../src/components/Screen';
-import { Action } from '../../src/components/TrackerControls';
-import { useTracker } from '../../src/tracker/TrackerProvider';
-import { summarize } from '../../src/tracker/domain';
+import { Action } from '../../src/components/HistoryControls';
+import { useRecoveryHistory } from '../../src/history/HistoryProvider';
+import { summarize } from '../../src/history/domain';
 
 export default function HistoryScreen() {
-  const tracker = useTracker();
+  const tracker = useRecoveryHistory();
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   async function run(id: string, work: () => Promise<void>) {

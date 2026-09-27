@@ -2,13 +2,13 @@ import { useState, useCallback } from 'react';
 import { Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Card, Screen } from '../../src/components/Screen';
-import { Action, Field } from '../../src/components/TrackerControls';
-import { useTracker } from '../../src/tracker/TrackerProvider';
-import { isDetected, modelFacts, suggestion, summarize } from '../../src/tracker/domain';
-import { TRACKER_PROTOCOL } from '../../src/tracker/protocol';
+import { Action, Field } from '../../src/components/HistoryControls';
+import { useRecoveryHistory } from '../../src/history/HistoryProvider';
+import { isDetected, modelFacts, suggestion, summarize } from '../../src/history/domain';
+import { TRACKER_PROTOCOL } from '../../src/history/protocol';
 
 export default function TagsScreen() {
-  const tracker = useTracker();
+  const tracker = useRecoveryHistory();
   const [selected, setSelected] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [place, setPlace] = useState('');

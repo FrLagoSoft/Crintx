@@ -1,4 +1,4 @@
-> Integration status (September 26, 2026): Tracker work is now layered onto origin/main at 66dd14e. Main's existing screens, firmware, BLE flow and AI test are retained. Open Setup → Open tracker prototype for the added local workflow. The strict offline manifest plugin is preserved but NOT enabled in this combined prototype: existing networking, GPS and model download remain available. App-wide offline/backup guarantees are therefore pending a separate integration decision. Regenerate native projects before building; old generated Android files and earlier export results are not evidence for this combined version.
+> Integration status (September 26, 2026): Tracker work is now layered onto origin/main at 66dd14e. Main's existing screens, firmware, BLE flow and AI test are retained. Open Setup → Open recovery history for the added local workflow. The strict offline manifest plugin is preserved but NOT enabled in this combined prototype: existing networking, GPS and model download remain available. App-wide offline/backup guarantees are therefore pending a separate integration decision. Regenerate native projects before building; old generated Android files and earlier export results are not evidence for this combined version.
 
 # Build and offline demonstration
 
@@ -81,7 +81,7 @@ Do not clear app data or uninstall an existing build to resolve signing issues w
 
 ## Hardware protocol
 
-Read `FIRMWARE_HANDOFF.md`. Supply the team's real firmware and populate `src/tracker/protocol.ts`; rebuild after configuration. Until then, real scanning gives an actionable setup error and Ring stays disabled. No simulated ring counts as a working buzzer.
+Read `FIRMWARE_HANDOFF.md`. Supply the team's real firmware and populate `src/history/protocol.ts`; rebuild after configuration. Until then, real scanning gives an actionable setup error and Ring stays disabled. No simulated ring counts as a working buzzer.
 
 ## Rehearsal without hardware
 

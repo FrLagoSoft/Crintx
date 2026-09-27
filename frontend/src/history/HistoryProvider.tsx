@@ -7,7 +7,7 @@ import { ForegroundTracker, type DiscoveredTag } from './ble';
 import { addItem, confirmRecovery, deleteHistory, emptyData, modelFacts, recordSighting, setAiEnabled, type TrackerData } from './domain';
 import { TrackerRepository } from './repository';
 
-function useTrackerController() {
+function useRecoveryHistoryController() {
   const [data, setData] = useState<TrackerData>(emptyData);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
@@ -126,14 +126,14 @@ function useTrackerController() {
     stopRing: () => ble.current!.stopRing(), cancelAnalysis: () => ai.current!.cancel() };
 }
 
-type Tracker = ReturnType<typeof useTrackerController>;
+type Tracker = ReturnType<typeof useRecoveryHistoryController>;
 const Context = createContext<Tracker | null>(null);
-export function TrackerProvider({ children }: { children: ReactNode }) {
-  const tracker = useTrackerController();
+export function HistoryProvider({ children }: { children: ReactNode }) {
+  const tracker = useRecoveryHistoryController();
   return <Context.Provider value={tracker}>{children}</Context.Provider>;
 }
-export function useTracker() {
+export function useRecoveryHistory() {
   const tracker = useContext(Context);
-  if (!tracker) throw new Error('TrackerProvider missing.');
+  if (!tracker) throw new Error('HistoryProvider missing.');
   return tracker;
 }

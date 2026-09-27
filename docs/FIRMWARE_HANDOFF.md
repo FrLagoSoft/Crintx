@@ -1,4 +1,4 @@
-> Integration status (September 26, 2026): Tracker work is now layered onto origin/main at 66dd14e. Main's existing screens, firmware, BLE flow and AI test are retained. Open Setup → Open tracker prototype for the added local workflow. The strict offline manifest plugin is preserved but NOT enabled in this combined prototype: existing networking, GPS and model download remain available. App-wide offline/backup guarantees are therefore pending a separate integration decision. Regenerate native projects before building; old generated Android files and earlier export results are not evidence for this combined version.
+> Integration status (September 26, 2026): Tracker work is now layered onto origin/main at 66dd14e. Main's existing screens, firmware, BLE flow and AI test are retained. Open Setup → Open recovery history for the added local workflow. The strict offline manifest plugin is preserved but NOT enabled in this combined prototype: existing networking, GPS and model download remain available. App-wide offline/backup guarantees are therefore pending a separate integration decision. Regenerate native projects before building; old generated Android files and earlier export results are not evidence for this combined version.
 
 # ESP32 firmware handoff — real hardware pending
 
@@ -15,7 +15,7 @@ The app intentionally sends **no guessed command**. The current statement “buz
 5. Identify pairing/bonding/encryption or another command authorization mechanism. Do not describe an unauthenticated public GATT write as secure.
 6. State buzzer type, GPIO pin, and active-high/active-low behavior for the physical tester. No GPIO assumptions are used in this app.
 
-Then fill `frontend/src/tracker/protocol.ts` with the **actual** UUIDs and base64-encoded payloads; set `firmwareBoundsRingDuration` only after inspecting/testing that behavior. Rebuild the APK. No UUID or payload has been proposed as if it were established hardware behavior.
+Then fill `frontend/src/history/protocol.ts` with the **actual** UUIDs and base64-encoded payloads; set `firmwareBoundsRingDuration` only after inspecting/testing that behavior. Rebuild the APK. No UUID or payload has been proposed as if it were established hardware behavior.
 
 ## Current adapter behavior
 

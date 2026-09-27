@@ -1,4 +1,4 @@
-> Integration status (September 26, 2026): Tracker work is now layered onto origin/main at 66dd14e. Main's existing screens, firmware, BLE flow and AI test are retained. Open Setup → Open tracker prototype for the added local workflow. The strict offline manifest plugin is preserved but NOT enabled in this combined prototype: existing networking, GPS and model download remain available. App-wide offline/backup guarantees are therefore pending a separate integration decision. Regenerate native projects before building; old generated Android files and earlier export results are not evidence for this combined version.
+> Integration status (September 26, 2026): Tracker work is now layered onto origin/main at 66dd14e. Main's existing screens, firmware, BLE flow and AI test are retained. Open Setup → Open recovery history for the added local workflow. The strict offline manifest plugin is preserved but NOT enabled in this combined prototype: existing networking, GPS and model download remain available. App-wide offline/backup guarantees are therefore pending a separate integration decision. Regenerate native projects before building; old generated Android files and earlier export results are not evidence for this combined version.
 
 # Verification evidence and remaining gates
 
@@ -27,7 +27,7 @@ The complete demo is **not verified**. Passing software checks do not establish 
 
 ## Evidence locations
 
-- `frontend/src/tracker/*.test.ts`: runnable software checks (`npm test`).
+- `frontend/src/history/*.test.ts`: runnable software checks (`npm test`).
 - `.cache/android-build*.log`: native build attempts and failures, ignored by Git.
 - `.cache/build-corruption-repair.json`: inventory of a damaged AAR and eight generated objects repaired during daytime continuation.
 - `artifacts/android-bundle`: first exported Hermes bundle; not an APK or launch proof.

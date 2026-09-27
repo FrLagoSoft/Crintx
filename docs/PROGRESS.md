@@ -2,10 +2,25 @@
 
 Goal active. Full demo is **not verified**.
 
+## Prototype review shipment
+- User authorized pushing the renamed recovery-history prototype for review. Current main inspected at bd42ae7; this branch remains based on 66dd14e.
+- Newer main UI/API/backend changes are not merged. See PROTOTYPE_VS_MAIN.md for concrete additions and outstanding integration.
+- TypeScript and all 18 tests passed after the rename. APK/device validation remains pending.
+
+## Recovery history naming
+- Renamed frontend/src/tracker to frontend/src/history and frontend/app/tracker to frontend/app/recovery-history, plus provider/controls and navigation labels.
+- Storage keys and model filenames are unchanged so existing local records remain readable. Place labels are optional text attached to confirmed recoveries, not GPS regions.
+
+## Metro compatibility audit
+- Fetched main at 42aa5e6: redesign, UTC API contract and local tag names. Inspected, not merged.
+- Main already declares the native capabilities for location/history/context; no new native module is needed for that bridge.
+- Made picker loading optional and reused the Local AI download. No native configuration or dependency changes.
+- TypeScript and 18 existing tests pass. Device compatibility remains unverified. See DEV_BUILD_COMPATIBILITY.md.
+
 ## Current integration status — September 26
 - User requested gradual work on AI-Prototyping and explicitly authorized pushing this branch, without a PR or changes to main.
 - Main baseline: 66dd14e. Original tracker snapshot preserved at f4e9979 on codex/offline-tracker-checkpoint-20260926.
-- Tracker screens moved to /tracker, accessible from existing Setup. Main's screens, AI test, firmware and BLE implementation remain present.
+- Tracker screens moved to /recovery-history, accessible from existing Setup. Main's screens, AI test, firmware and BLE implementation remain present.
 - Main's application permissions/autolinking are retained to preserve its working GPS, networking and model download. The saved strict offline privacy plugin is not enabled in this combined prototype. Tracker-specific consent, local history and deletion remain implemented; no app-wide privacy guarantee is claimed.
 - Firmware source is now present under firmware/. Reconcile it with the guarded tracker adapter in a later step, and confirm it matches the flashed board before claiming hardware success.
 - The previous native build failed during JS/Hermes bundling with NTSTATUS 0xC0000005. No successful APK or device behavior is established. Earlier results below describe the pre-integration snapshot.

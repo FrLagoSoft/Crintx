@@ -20,7 +20,7 @@ export class ForegroundTracker {
   async scan(onTag: (tag: DiscoveredTag) => void, onStatus: (status: string) => void) {
     this.stop();
     const generation = this.generation;
-    if (!protocol.serviceUUID) throw new Error('Tracker protocol is not configured. Add the firmware service UUID in src/tracker/protocol.ts and rebuild.');
+    if (!protocol.serviceUUID) throw new Error('Tracker protocol is not configured. Add the firmware service UUID in src/history/protocol.ts and rebuild.');
     if (Platform.OS !== 'android') throw new Error('This demonstration requires a native Android build.');
     const permissions = Number(Platform.Version) >= 31
       ? [PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN, PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT]

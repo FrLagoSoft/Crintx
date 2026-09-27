@@ -52,7 +52,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "test": "node --experimental-strip-types --test src/tracker/*.test.ts",
+    "test": "node --experimental-strip-types --test src/history/*.test.ts",
     "typecheck": "tsc --noEmit",
     "bundle:android": "expo export --platform android --output-dir ../artifacts/android-bundle --max-workers 2"
   },

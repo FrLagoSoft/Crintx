@@ -4,10 +4,10 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { AppState, Switch, Text } from 'react-native';
 import { Card, Screen } from '../src/components/Screen';
-import { Action, Field } from '../src/components/TrackerControls';
-import { LocalInference, type Explanation } from '../src/tracker/ai';
-import { addItem, confirmRecovery, deleteHistory, emptyData, isDetected, modelFacts, recordSighting, setAiEnabled, suggestion, summarize } from '../src/tracker/domain';
-import { TrackerRepository } from '../src/tracker/repository';
+import { Action, Field } from '../src/components/HistoryControls';
+import { LocalInference, type Explanation } from '../src/history/ai';
+import { addItem, confirmRecovery, deleteHistory, emptyData, isDetected, modelFacts, recordSighting, setAiEnabled, suggestion, summarize } from '../src/history/domain';
+import { TrackerRepository } from '../src/history/repository';
 
 // A separate key and explicit simulated source: no seeded records enter the real tracker store.
 const SIMULATION_KEY = 'crintx.simulation.v1';
