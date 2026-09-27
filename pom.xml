@@ -53,6 +53,14 @@
 			<artifactId>spring-ai-starter-model-elevenlabs</artifactId>
 		</dependency>
 
+		<!-- El starter la trae como "optional", y Spring Boot 4 no mete dependencias
+		     opcionales en el jar final: sin esta línea el jar (y Docker) falla con
+		     ClassNotFoundException: TextToSpeechModel. -->
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-elevenlabs</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>

@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Gradle cache ###
+.gradle/
+
+### Server secrets (read by docker compose): never commit ###
+/.env
