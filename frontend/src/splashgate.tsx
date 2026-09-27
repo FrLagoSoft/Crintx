@@ -2,6 +2,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, Easing, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { getBuildId } from './buildId';
+import { loadFonts } from './fonts';
 import { colors } from './theme';
 
 // Keep the native splash up until the JS loading screen below is on screen.
@@ -15,6 +16,7 @@ type Boot = { buildId: string };
  * "Checking Bluetooth", "Reaching server"); keep them fast.
  */
 const STEPS: { label: string; run: (boot: Partial<Boot>) => Promise<void> }[] = [
+  { label: 'Loading fonts', run: async () => { await loadFonts(); } },
   { label: 'Creating build ID', run: async (b) => { b.buildId = await getBuildId(); } },
 ];
 
@@ -100,7 +102,7 @@ function LoadingScreen({ step, error, onRetry }: { step: string; error: string |
           <>
             <Text className="text-center text-fault">{error}</Text>
             <Pressable onPress={onRetry} className="mt-md rounded-pill border border-edge px-lg py-sm">
-              <Text className="font-semibold text-text">Try again</Text>
+              <Text className="text-text">Try again</Text>
             </Pressable>
           </>
         ) : (

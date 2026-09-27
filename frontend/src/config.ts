@@ -1,10 +1,13 @@
-const url = process.env.EXPO_PUBLIC_API_URL;
-if (!url) {
-  console.warn('EXPO_PUBLIC_API_URL is not set. Copy .env.example to .env, set it, restart with -c.');
+const url = process.env.EXPO_PUBLIC_API_URL?.trim();
+
+/** False until EXPO_PUBLIC_API_URL in frontend/.env holds a real address (not the placeholder). */
+export const API_CONFIGURED = !!url && !url.includes('PASTE-');
+if (!API_CONFIGURED) {
+  console.warn('EXPO_PUBLIC_API_URL is not set. Put the backend URL in frontend/.env, restart with -c.');
 }
 
-/** Base URL of the Spring Boot server. Never put secrets in EXPO_PUBLIC_* vars. */
-export const API_URL = (url ?? 'http://localhost:8080').replace(/\/$/, '');
+/** Base URL of the Spring Boot server (may include an API Gateway stage path). Never put secrets in EXPO_PUBLIC_* vars. */
+export const API_URL = (url ?? 'http://localhost:8080').replace(/\/+$/, '');
 
 /**
  * CARTO basemaps key (dark map style). Optional: without it the map falls back

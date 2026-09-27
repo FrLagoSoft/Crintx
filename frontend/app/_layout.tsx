@@ -9,11 +9,22 @@ import { colors } from '../src/theme';
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <SplashGate>
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.void } }}>
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="index" />
           <Stack.Screen name="buzz" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="log" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen
+            name="ask"
+            options={{
+              headerShown: true,
+              title: '', // the screen shows its own big title
+              headerStyle: { backgroundColor: colors.void },
+              headerTintColor: colors.ink,
+              headerShadowVisible: false,
+            }}
+          />
         </Stack>
       </SplashGate>
     </SafeAreaProvider>
