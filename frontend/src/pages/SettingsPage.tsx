@@ -115,14 +115,6 @@ export function SettingsPage({ width, height, tags, bleBusy, setBleBusy, prefs, 
       >
         <Text className="font-mono text-sm text-cream">AI Model</Text>
       </Pressable>
-      <Pressable
-        onPress={() => router.push('/recovery-history')}
-        accessibilityRole="button"
-        disabled={bleBusy}
-        className="h-12 items-center justify-center rounded-pill border-2 border-cream bg-ink active:opacity-80"
-      >
-        <Text className="font-mono text-sm text-cream">Recovery history</Text>
-      </Pressable>
     </Page>
   );
 }

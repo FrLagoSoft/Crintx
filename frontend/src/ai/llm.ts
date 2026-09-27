@@ -1,7 +1,6 @@
 import { initLlama, type LlamaContext } from 'llama.rn';
 import { MODEL_PATH } from './model';
-
-const SYSTEM_PROMPT = 'You are a helpful assistant running entirely on this phone. Answer briefly.';
+import { completionMessages, type HistoryContext } from './historyContext';
 
 let ctx: LlamaContext | null = null;
 
@@ -19,13 +18,13 @@ export const isLoaded = () => ctx !== null;
 export type Answer = { text: string; ms: number; tokensPerSecond: number };
 
 /** One prompt in, one answer out. No chat memory between questions. */
-export async function ask(prompt: string, onToken?: (token: string) => void): Promise<Answer> {
+export async function ask(prompt: string, onToken?: (token: string) => void, history?: HistoryContext): Promise<Answer> {
   if (!ctx) throw new Error('Load the model first.');
   const started = Date.now();
   const res = await ctx.completion({
-    messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: prompt }],
+    messages: completionMessages(prompt, history),
     n_predict: 256,
-    temperature: 0.7,
+    temperature: 0.2,
     stop: ['<|im_end|>', '<|endoftext|>'],
   }, data => onToken?.(data.token));
   return { text: res.text.trim(), ms: Date.now() - started, tokensPerSecond: res.timings?.predicted_per_second ?? 0 };

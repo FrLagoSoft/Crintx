@@ -6,6 +6,7 @@ import { Page, TrayHint } from '../components/Page';
 import { timeAgo } from '../location';
 import { loadTagNames, tagNameFor } from '../tagNames';
 import { colors } from '../theme';
+import { Button } from '../components/Button';
 
 /** Opens the map for one logged buzz. */
 export function openLog(p: LocationPoint, tag: string) {
@@ -56,6 +57,7 @@ export function HistoryPage({ width, height, active }: Props) {
       action={{ label: 'Most Recent History', onPress: openLatest, disabled: loading && !history }}
       message={message}
     >
+      <Button icon="sparkles-outline" label="Ask AI about my history" onPress={() => router.push('/ask')} />
       {history === null ? (
         <View className="items-center py-xl">
           {loading ? <ActivityIndicator color={colors.ink} /> : <TrayHint title="Not loaded" body="Swipe here again to retry." />}
