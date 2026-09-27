@@ -73,7 +73,7 @@ export function UsageSummary() {
         <Text className="text-ink">{expanded ? '▴' : '▾'}</Text>
       </Pressable>
     </View>
-    <Text className="font-mono text-xs text-dim">Saved on this phone · temporary storage until backend is fixed</Text>
+    <Text className="font-mono text-xs text-dim">Saved on this phone and synced with the server</Text>
     {expanded && <View className="rounded-tile bg-panel p-md">
       {!facts && <Text className="text-dim">Generate a summary to see the history used.</Text>}
       {facts?.groups.map((entry, index) => <Text key={index} className="mb-sm text-text">

@@ -2,10 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from './api';
 import { BuzzHistoryStore, combineBuzzHistory } from './buzzHistoryStore';
 
-// TEMP FEATURE FIX — until backend storage is fixed.
-// Real buzzes persist on this phone; no fictional seed data and no backend wait.
-// Set false when backend reads work to combine remote records with the local copy.
-export const USE_LOCAL_BUZZ_HISTORY = true;
+// Buzzes are always saved on this phone first. With this false (the default now that the
+// backend's MongoDB storage works), history also merges in the server's copy, e.g. after a
+// reinstall; if the server is unreachable it falls back to the local copy.
+// Set true to go back to local-only reads (e.g. if the backend breaks again).
+export const USE_LOCAL_BUZZ_HISTORY = false;
 export const buzzHistory = new BuzzHistoryStore(AsyncStorage);
 
 export async function readBuzzHistory(limit = 50) {

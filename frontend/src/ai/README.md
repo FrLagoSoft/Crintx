@@ -1,4 +1,4 @@
-> TEMP FEATURE FIX — until backend is fixed: real buzz records now persist in AsyncStorage through src/buzzHistory.ts. Both summary entry points and Buzzer History read that store. Settings includes a summary action and data dropdown. No fictional records are seeded. The storage flag can restore combined backend/local reads later; failed uploads are not automatically replayed. Existing AI download/chat UI is preserved. The older backend-only description below is historical.
+> Buzz records persist in AsyncStorage through src/buzzHistory.ts (saved locally first, then sent to the server). USE_LOCAL_BUZZ_HISTORY is now false: reads merge the server copy, falling back to local if the server is down. Both summary entry points and Buzzer History read that store. Settings includes a summary action and data dropdown. No fictional records are seeded. The storage flag can restore combined backend/local reads later; failed uploads are not automatically replayed. Existing AI download/chat UI is preserved. The older backend-only description below is historical.
 
 # Local AI with buzz history
 
