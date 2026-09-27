@@ -3,6 +3,7 @@ import '../global.css';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NarratorHost } from '../src/narrator';
 import { SplashGate } from '../src/splashgate';
 import { colors } from '../src/theme';
 
@@ -26,6 +27,7 @@ export default function RootLayout() {
             }}
           />
         </Stack>
+        <NarratorHost />
       </SplashGate>
     </SafeAreaProvider>
   );

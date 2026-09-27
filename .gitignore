@@ -35,3 +35,9 @@ build/
 .tooling/
 .cache/
 artifacts/
+
+### Gradle cache ###
+.gradle/
+
+### Server secrets (read by docker compose): never commit ###
+/.env

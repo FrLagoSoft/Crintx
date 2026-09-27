@@ -100,4 +100,48 @@ export const api = {
     const res = await request<{ locations: LocationPoint[] }>(`${LOCATIONS}/${await getBuildId()}/history?limit=${limit}`);
     return res.locations;
   },
+
+  /**
+   * Text → speech via the server (ElevenLabs). Returns the MP3 as base64.
+   * The server answers 503 when TTS isn't configured there, and caps text at 500 chars.
+   */
+  speak: async (text: string): Promise<string> => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20_000);
+    try {
+      const res = await fetch(`${API_URL}/api/tts/generate?text=${encodeURIComponent(text.slice(0, 500))}`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'X-Device-Id': await getBuildId() },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new ApiError(res.status, body?.code ?? 'HTTP_ERROR', body?.message ?? `Narration failed (${res.status}).`);
+      }
+      return bytesToBase64(new Uint8Array(await res.arrayBuffer()));
+    } catch (err: any) {
+      if (err instanceof ApiError) throw err;
+      if (err?.name === 'AbortError') throw new ApiError(0, 'TIMEOUT', 'The narrator took too long to answer.');
+      throw new ApiError(0, 'NETWORK', `Can’t reach the server at ${API_URL}.`);
+    } finally {
+      clearTimeout(timer);
+    }
+  },
 };
+
+const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+/** Uint8Array → base64 (React Native has no Buffer). */
+function bytesToBase64(bytes: Uint8Array): string {
+  const out: string[] = [];
+  for (let i = 0; i < bytes.length; i += 3) {
+    const a = bytes[i], b = bytes[i + 1] ?? 0, c = bytes[i + 2] ?? 0;
+    const n = (a << 16) | (b << 8) | c;
+    out.push(
+      B64[(n >> 18) & 63] + B64[(n >> 12) & 63] +
+      (i + 1 < bytes.length ? B64[(n >> 6) & 63] : '=') +
+      (i + 2 < bytes.length ? B64[n & 63] : '=')
+    );
+  }
+  return out.join('');
+}

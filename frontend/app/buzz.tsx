@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BuzzMap } from '../src/components/BuzzMap';
 import { Button } from '../src/components/Button';
 import { describePlace, formatCoords, getCurrentFix, logBuzzLocation, type Fix } from '../src/location';
+import { narrate } from '../src/narrator';
+import { loadPrefs } from '../src/prefs';
 import { colors } from '../src/theme';
 
 type Save = { state: 'saving' } | { state: 'saved' } | { state: 'failed'; reason: string };
@@ -22,6 +24,25 @@ export default function BuzzLocationScreen() {
   const [place, setPlace] = useState<string | null | undefined>(undefined); // undefined = still looking
   const [save, setSave] = useState<Save | null>(null);
   const started = useRef(false); // effects run twice in dev; log the buzz once
+
+  // Narrator Mode: once we know where we are, read it out loud (Settings → Narration Mode).
+  const [narration, setNarration] = useState<'off' | 'speaking' | 'done' | { error: string }>('off');
+  const narrated = useRef(false);
+  useEffect(() => {
+    if (!fix || place === undefined || narrated.current) return;
+    narrated.current = true;
+    loadPrefs().then(async (prefs) => {
+      if (!prefs.narration) return;
+      setNarration('speaking');
+      const where = place ? ` You're at ${place}.` : '';
+      try {
+        await narrate(`Buzzed ${tag}.${where}`);
+        setNarration('done');
+      } catch (e: any) {
+        setNarration({ error: e?.message ?? 'Narration failed.' });
+      }
+    });
+  }, [fix, place, tag]);
 
   async function saveFix(f: Fix) {
     setSave({ state: 'saving' });
@@ -94,6 +115,19 @@ export default function BuzzLocationScreen() {
           </View>
 
           {save && <SaveStatus save={save} onRetry={() => fix && saveFix(fix)} />}
+
+          {narration !== 'off' && (
+            <View className="mt-sm flex-row items-center gap-sm">
+              <Ionicons
+                name={typeof narration === 'object' ? 'volume-mute-outline' : 'volume-high-outline'}
+                size={16}
+                color={typeof narration === 'object' ? colors.fault : colors.dim}
+              />
+              <Text className={`flex-1 font-mono text-xs ${typeof narration === 'object' ? 'text-fault' : 'text-dim'}`}>
+                {narration === 'speaking' ? 'Narrating…' : narration === 'done' ? 'Narrated' : `Narration: ${narration.error}`}
+              </Text>
+            </View>
+          )}
 
           <View className="mt-md flex-row gap-sm">
             {fix && (
