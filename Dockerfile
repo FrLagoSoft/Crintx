@@ -7,6 +7,7 @@ WORKDIR /app
 # Copiar archivos de Maven wrapper y POM
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
+RUN chmod +x ./mvnw
 RUN ./mvnw dependency:go-offline -B
 
 # Copiar el código fuente y compilar el JAR ejecutable
